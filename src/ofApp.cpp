@@ -35,7 +35,7 @@ void ofApp::setup()
     camera.setFarClip(100000.0);
     
     auto rule1 = burst.add_rule("R1", 10);
-    rule1.drawBox().translateX(20.0).callRule("R1").translateX(40.0).drawBox();
+    rule1.drawBox().translateX(20.0).callRule("R1").translateY(20.0).drawBox();
     burst.run();
 }
 

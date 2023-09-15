@@ -29,6 +29,24 @@ void Burst::translateX(size_t ruleIndex, float delta)
     });
 }
 
+void Burst::translateY(size_t ruleIndex, float delta)
+{
+    rules[ruleIndex].actions.push_back([this, delta] {
+        ofMatrix4x4 m;
+        m.makeTranslationMatrix(0.0, delta, 0.0);
+        this->transformationMatrix *= m;
+    });
+}
+
+void Burst::translateZ(size_t ruleIndex, float delta)
+{
+    rules[ruleIndex].actions.push_back([this, delta] {
+        ofMatrix4x4 m;
+        m.makeTranslationMatrix(0.0, 0.0, delta);
+        this->transformationMatrix *= m;
+    });
+}
+
 void Burst::drawBox(size_t ruleIndex)
 {
     rules[ruleIndex].actions.push_back([this] {
@@ -83,6 +101,18 @@ RuleHandle::RuleHandle(Burst &burst, size_t ruleIndex)
 RuleHandle RuleHandle::translateX(float delta)
 {
     burst.translateX(ruleIndex, delta);
+    return *this;
+}
+
+RuleHandle RuleHandle::translateY(float delta)
+{
+    burst.translateY(ruleIndex, delta);
+    return *this;
+}
+
+RuleHandle RuleHandle::translateZ(float delta)
+{
+    burst.translateZ(ruleIndex, delta);
     return *this;
 }
 

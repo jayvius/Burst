@@ -23,6 +23,8 @@ public:
     RuleHandle add_rule(std::string name);
     RuleHandle add_rule(std::string name, size_t maxDepth);
     void translateX(size_t ruleIndex, float delta);
+    void translateY(size_t ruleIndex, float delta);
+    void translateZ(size_t ruleIndex, float delta);
     void drawBox(size_t ruleIndex);
     void callRule(size_t ruleIndex, std::string ruleName);
     void run();
@@ -42,6 +44,8 @@ class RuleHandle
 public:
     RuleHandle(Burst &burst, size_t ruleIndex);
     RuleHandle translateX(float delta);
+    RuleHandle translateY(float delta);
+    RuleHandle translateZ(float delta);
     RuleHandle drawBox();
     RuleHandle callRule(std::string ruleName);
 
