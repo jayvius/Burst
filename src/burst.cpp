@@ -11,7 +11,12 @@ Burst::Burst(ofxVboAppender &vboAppender)
 
 RuleHandle Burst::add_rule(std::string name)
 {
-    rules.push_back({name, {}});
+    return add_rule(name, 100000);
+}
+
+RuleHandle Burst::add_rule(std::string name, size_t maxDepth)
+{
+    rules.push_back({name, {}, 0, maxDepth});
     return RuleHandle(*this, rules.size() - 1);
 }
 
@@ -32,13 +37,41 @@ void Burst::drawBox(size_t ruleIndex)
     });
 }
 
+void Burst::callRule(size_t ruleIndex, std::string ruleName)
+{
+    rules[ruleIndex].actions.push_back([this, ruleName] {
+        for (auto &r: this->rules) {
+            if (r.name == ruleName && r.callCount < r.maxDepth) {
+                this->actionStack.push_back(this->actionIndex);
+                this->actionIndex = 0;
+                this->ruleStack.push_back(this->ruleIndex);
+                this->ruleIndex = 0;
+                r.callCount++;
+                break;
+            }
+        }
+    });
+}
+
 void Burst::run()
 {
-    rules[0].actions[0]();
-    rules[0].actions[1]();
-    rules[0].actions[2]();
-    rules[0].actions[3]();
-    rules[0].actions[4]();
+    ruleIndex = 0;
+    actionIndex = 0;
+    while (true) {
+        while (actionIndex < rules[ruleIndex].actions.size()) {
+            auto action = rules[ruleIndex].actions[actionIndex];
+            actionIndex++;
+            action();
+        }
+
+        if (actionStack.size() == 0 || ruleStack.size() == 0)
+            return;
+
+        actionIndex = actionStack.back();
+        actionStack.pop_back();
+        ruleIndex = ruleStack.back();
+        ruleStack.pop_back();
+    }
 }
     
 RuleHandle::RuleHandle(Burst &burst, size_t ruleIndex)
@@ -56,5 +89,11 @@ RuleHandle RuleHandle::translateX(float delta)
 RuleHandle RuleHandle::drawBox()
 {
     burst.drawBox(ruleIndex);
+    return *this;
+}
+
+RuleHandle RuleHandle::callRule(std::string ruleName)
+{
+    burst.callRule(ruleIndex, ruleName);
     return *this;
 }
