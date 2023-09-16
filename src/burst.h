@@ -37,6 +37,7 @@ private:
     size_t actionIndex;
     std::vector<size_t> ruleStack;
     std::vector<size_t> actionStack;
+    std::vector<ofMatrix4x4> transformationStack;
 };
 
 class RuleHandle

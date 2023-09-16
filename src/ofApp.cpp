@@ -35,7 +35,11 @@ void ofApp::setup()
     camera.setFarClip(100000.0);
     
     auto rule1 = burst.add_rule("R1", 10);
-    rule1.drawBox().translateX(20.0).callRule("R1").translateY(20.0).drawBox();
+    rule1.callRule("R2").translateX(20.0).callRule("R1");
+    auto rule2 = burst.add_rule("R2", 10);
+    rule2.callRule("R3").translateY(20.0).callRule("R2");
+    auto rule3 = burst.add_rule("R3", 10);
+    rule3.translateZ(20.0).drawBox().callRule("R3");
     burst.run();
 }
 
@@ -87,7 +91,6 @@ void ofApp::mouseDragged(int x, int y, int button)
 	xSpeed = ofLerp(xSpeed, (x - lastMousePosition.x) * dampen, 0.1);
 	ySpeed = ofLerp(ySpeed, (y - lastMousePosition.y) * dampen, 0.1);
 	lastMousePosition = mouse;
-    printf("xSpeed=%f ySpeed=%f\n", xSpeed, ySpeed);
 }
 
 void ofApp::mousePressed(int x, int y, int button)
