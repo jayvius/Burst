@@ -3,8 +3,8 @@
 #include "ofMatrix4x4.h"
 #include "of3dPrimitives.h"
 
-Burst::Burst(ofxVboAppender &vboAppender)
-    : vboAppender(vboAppender)
+Burst::Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex)
+    : vboAppender(vboAppender), updateMutex(updateMutex)
 {
 
 }
@@ -44,5 +44,6 @@ void Burst::translateZ(float delta)
 
 void Burst::drawBox()
 {
+    std::lock_guard<std::mutex> guard(this->updateMutex);
     vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, this->transformationMatrix);
 }

@@ -6,7 +6,7 @@
 using std::thread;
 
 ofApp::ofApp()
-    : dampen(0.4), burst(vboAppender)
+    : dampen(0.4), burst(vboAppender, updateMutex)
 {
 
 }
@@ -38,7 +38,7 @@ void ofApp::setup()
     camera.removeAllInteractions();
     camera.setFarClip(100000.0);
     
-    thread t(&Burst::run, burst, std::make_unique<NetworkStreamer>());
+    thread t(&Burst::run, this->burst, std::make_unique<NetworkStreamer>());
     t.detach();
 }
 
@@ -65,7 +65,10 @@ void ofApp::draw()
     ofDrawAxis(100);
     material.begin();
 
-    vboAppender.draw();
+    {
+        std::lock_guard<std::mutex> guard(this->updateMutex);
+        vboAppender.draw();
+    }
 
     material.end();
     camera.end();

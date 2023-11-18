@@ -22,6 +22,7 @@ private:
 	ofLight light3;
 
     ofxVboAppender vboAppender;
+    std::mutex updateMutex;
     Burst burst;
 		
     // Model rotation
