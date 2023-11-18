@@ -38,14 +38,7 @@ void ofApp::setup()
     camera.removeAllInteractions();
     camera.setFarClip(100000.0);
     
-    auto rule1 = burst.add_rule("R1", 10);
-    rule1.callRule("R2").translateX(20.0).callRule("R1");
-    auto rule2 = burst.add_rule("R2", 10);
-    rule2.callRule("R3").translateY(20.0).callRule("R2");
-    auto rule3 = burst.add_rule("R3", 10);
-    rule3.translateZ(20.0).drawBox().callRule("R3");
-    //burst.run();
-    thread t(listen_for_commands);
+    thread t(&Burst::run, burst, std::make_unique<NetworkStreamer>());
     t.detach();
 }
 
@@ -60,8 +53,6 @@ void ofApp::update()
 	glm::quat yRot = glm::angleAxis(ofDegToRad(xSpeed), glm::vec3(0,1,0));
 	glm::quat xRot = glm::angleAxis(ofDegToRad(ySpeed), glm::vec3(0.7071,0,-0.7071));
 	modelRotation = yRot * xRot * modelRotation;
-
-    //burst.run();
 }
 
 void ofApp::draw()

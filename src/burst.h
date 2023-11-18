@@ -4,69 +4,25 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <memory>
 #include "ofxVboAppender.h"
-
-struct Rule
-{
-    std::string name;
-    std::vector<std::function<bool()>> actions;
-    size_t callCount;
-    size_t maxDepth;
-};
-
-class RuleHandle;
+#include "server.h"
 
 class Burst
 {
 public:
     Burst(ofxVboAppender &vboAppender);
-    RuleHandle add_rule(std::string name);
-    RuleHandle add_rule(std::string name, size_t maxDepth);
-    void translateX(size_t ruleIndex, float delta);
-    void translateY(size_t ruleIndex, float delta);
-    void translateZ(size_t ruleIndex, float delta);
-    void drawBox(size_t ruleIndex);
-    void callRule(size_t ruleIndex, std::string ruleName);
-    void run();
+    void run(std::unique_ptr<ByteCodeStreamer> streamer);
 
 private:
+    void translateX(float delta);
+    void translateY(float delta);
+    void translateZ(float delta);
+    void drawBox();
+
     ofxVboAppender &vboAppender;
     ofMatrix4x4 transformationMatrix;
-    std::vector<Rule> rules;
-    size_t ruleIndex;
-    size_t actionIndex;
-    std::vector<size_t> ruleStack;
-    std::vector<size_t> actionStack;
     std::vector<ofMatrix4x4> transformationStack;
-    bool init;
 };
-
-class RuleHandle
-{
-public:
-    RuleHandle(Burst &burst, size_t ruleIndex);
-    RuleHandle translateX(float delta);
-    RuleHandle translateY(float delta);
-    RuleHandle translateZ(float delta);
-    RuleHandle drawBox();
-    RuleHandle callRule(std::string ruleName);
-
-private:
-    Burst &burst;
-    size_t ruleIndex;
-};
-
-/*
-class RuleHandle
-{
-public:
-    RuleHandle(size_t ruleIndex, Burst &burst) : ruleIndex(ruleIndex), burst(burst) {}
-    RuleHandle TranslateX(float delta) {burst.addTranslateX(delta); return *this}
-
-private:
-    size_t ruleIndex;
-    Burst &burst;
-};
-*/
 
 #endif
