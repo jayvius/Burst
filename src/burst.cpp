@@ -11,12 +11,28 @@ Burst::Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex)
 
 void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
 {
-    std::vector<uint8_t> buffer(3, 0);
+    std::vector<uint8_t> buffer(5, 0);
     while (true) {
-        size_t count = streamer->get(buffer.data(), buffer.size());
-        printf("count=%u\n", count);
+        size_t count = streamer->get(buffer.data(), 1);
+        printf("count: %u\n", count);
         for (int i = 0; i < count; i++) {
-            printf("%u\n", buffer[i]);
+            printf("data: %x ", buffer[i]);
+        }
+        printf("\n");
+        if (buffer[0] == 1) {
+            count = streamer->get(buffer.data(), 4);
+            printf("count: %u\n", count);
+            for (int i = 0; i < count; i++) {
+                printf("data: %x ", buffer[i]);
+            }
+            float delta;
+            memcpy(&delta, buffer.data(), 4);
+            printf("tx: %f\n", delta);
+            this->translateX(delta);
+        }
+        else if (buffer[0] == 4) {
+            printf("box\n");
+            this->drawBox();
         }
     }
 }
