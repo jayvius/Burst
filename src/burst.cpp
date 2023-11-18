@@ -4,7 +4,7 @@
 #include "of3dPrimitives.h"
 
 Burst::Burst(ofxVboAppender &vboAppender)
-    : vboAppender(vboAppender)
+    : vboAppender(vboAppender), init(false)
 {
 
 }
@@ -26,6 +26,7 @@ void Burst::translateX(size_t ruleIndex, float delta)
         ofMatrix4x4 m;
         m.makeTranslationMatrix(delta, 0.0, 0.0);
         this->transformationMatrix *= m;
+        return false;
     });
 }
 
@@ -35,6 +36,7 @@ void Burst::translateY(size_t ruleIndex, float delta)
         ofMatrix4x4 m;
         m.makeTranslationMatrix(0.0, delta, 0.0);
         this->transformationMatrix *= m;
+        return false;
     });
 }
 
@@ -44,13 +46,20 @@ void Burst::translateZ(size_t ruleIndex, float delta)
         ofMatrix4x4 m;
         m.makeTranslationMatrix(0.0, 0.0, delta);
         this->transformationMatrix *= m;
+        return false;
     });
+}
+
+void Burst::drawBox()
+{
+    vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, this->transformationMatrix);
 }
 
 void Burst::drawBox(size_t ruleIndex)
 {
     rules[ruleIndex].actions.push_back([this, ruleIndex] {
-        vboAppender.append(ofBoxPrimitive(10, 10, 10).getMesh(), {1, 1, 1, 1}, this->transformationMatrix);
+        vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, this->transformationMatrix);
+        return true;
     });
 }
 
@@ -70,19 +79,25 @@ void Burst::callRule(size_t ruleIndex, std::string ruleName)
             }
             index++;
         }
+        return false;
     });
 }
 
 void Burst::run()
 {
-    ruleIndex = 0;
-    actionIndex = 0;
-    rules[ruleIndex].callCount = 1;
+    if (!init) {
+        ruleIndex = 0;
+        actionIndex = 0;
+        rules[ruleIndex].callCount = 1;
+        init = true;
+    }
     while (true) {
         while (actionIndex < rules[ruleIndex].actions.size()) {
             auto action = rules[ruleIndex].actions[actionIndex];
             actionIndex++;
-            action();
+            if (action()) {
+                return;
+            }
         }
 
         if (actionStack.size() == 0 || ruleStack.size() == 0)

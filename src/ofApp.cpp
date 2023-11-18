@@ -1,5 +1,9 @@
 #include "ofApp.h"
 #include <glm/gtx/string_cast.hpp>
+#include "server.h"
+#include <thread>
+
+using std::thread;
 
 ofApp::ofApp()
     : dampen(0.4), burst(vboAppender)
@@ -40,7 +44,9 @@ void ofApp::setup()
     rule2.callRule("R3").translateY(20.0).callRule("R2");
     auto rule3 = burst.add_rule("R3", 10);
     rule3.translateZ(20.0).drawBox().callRule("R3");
-    burst.run();
+    //burst.run();
+    thread t(listen_for_commands);
+    t.detach();
 }
 
 void ofApp::update()
@@ -55,13 +61,7 @@ void ofApp::update()
 	glm::quat xRot = glm::angleAxis(ofDegToRad(ySpeed), glm::vec3(0.7071,0,-0.7071));
 	modelRotation = yRot * xRot * modelRotation;
 
-    auto box = ofBoxPrimitive(10, 10, 10, 1, 1, 1);
-    ofMatrix4x4 transformMatrix;
-    transformMatrix.makeTranslationMatrix({ofRandom(-150, 150), ofRandom(-150, 150), ofRandom(-150, 150)});
-    ofMatrix4x4 rotateMatrix;
-    rotateMatrix.makeRotationMatrix(ofRandom(89), {0, 1, 0});
-    //transformMatrix = rotateMatrix * transformMatrix;
-    //vboAppender.append(box.getMesh(), {1, 1, 1, 1}, transformMatrix);
+    //burst.run();
 }
 
 void ofApp::draw()

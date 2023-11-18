@@ -20,5 +20,10 @@ private:
 	ofBufferObject colorBuffer;
 	ofBufferObject normalBuffer;
 	uint32_t vertexCount;
+	uint32_t updatedVertexCount;
 	uint32_t maxVertexCount;
+
+	std::vector<ofVec3f> positionData;
+	std::vector<ofVec4f> colorData;
+	std::vector<ofVec3f> normalData;
 };

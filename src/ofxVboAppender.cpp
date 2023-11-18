@@ -6,7 +6,7 @@ const size_t colorSize = 4 * sizeof(float);
 const size_t normalSize = 3 * sizeof(float);
 
 ofxVboAppender::ofxVboAppender(uint32_t maxVertexCount)
-    : vertexCount(0), maxVertexCount(maxVertexCount)
+    : vertexCount(0), updatedVertexCount(0), maxVertexCount(maxVertexCount)
 {
     positionBuffer.allocate(maxVertexCount * positionSize, GL_STATIC_DRAW);
     vbo.setVertexBuffer(positionBuffer, 3, positionSize);
@@ -22,11 +22,10 @@ void ofxVboAppender::append(ofVec3f position, ofVec4f color, ofVec3f normal)
         ofLog(OF_LOG_WARNING, "vertex limit of %d has been reached.", maxVertexCount);
         return;
     }
+    positionData.push_back(position);
+    colorData.push_back(color);
+    normalData.push_back(normal);
 
-    positionBuffer.updateData(vertexCount * positionSize, positionSize, position.getPtr());
-    colorBuffer.updateData(vertexCount * colorSize, colorSize, color.getPtr());
-    normalBuffer.updateData(vertexCount * normalSize, normalSize, normal.getPtr());
-    
     vertexCount++;
 }
 
@@ -62,5 +61,15 @@ void ofxVboAppender::append(ofMesh &mesh, ofVec4f color, ofMatrix4x4 &transformM
 
 void ofxVboAppender::draw()
 {
+    if (vertexCount > updatedVertexCount) {
+        positionBuffer.updateData(updatedVertexCount * positionSize, vertexCount * positionSize, positionData.data());
+        colorBuffer.updateData(updatedVertexCount * colorSize, vertexCount * colorSize, colorData.data());
+        normalBuffer.updateData(updatedVertexCount * normalSize, vertexCount * normalSize, normalData.data());
+        updatedVertexCount = vertexCount;
+        positionData.clear();
+        colorData.clear();
+        normalData.clear();
+    }
+    
     vbo.draw(GL_TRIANGLES, 0, vertexCount);
 }

@@ -9,7 +9,7 @@
 struct Rule
 {
     std::string name;
-    std::vector<std::function<void()>> actions;
+    std::vector<std::function<bool()>> actions;
     size_t callCount;
     size_t maxDepth;
 };
@@ -38,6 +38,7 @@ private:
     std::vector<size_t> ruleStack;
     std::vector<size_t> actionStack;
     std::vector<ofMatrix4x4> transformationStack;
+    bool init;
 };
 
 class RuleHandle
