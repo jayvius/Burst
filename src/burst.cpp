@@ -12,14 +12,14 @@ Burst::Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex)
 void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
 {
     Rules rules;
-    rules.ruleTable.push_back({{5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 3});
-    rules.ruleTable.push_back({{5, 2, 3, 0, 0, 160, 65, 5, 1}, 0, 3});
-    rules.ruleTable.push_back({{4, 1, 0, 0, 160, 65, 5, 2}, 0, 3});
+    rules.ruleTable.push_back({{5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 50});
+    rules.ruleTable.push_back({{5, 2, 3, 0, 0, 160, 65, 5, 1}, 0, 50});
+    rules.ruleTable.push_back({{4, 1, 0, 0, 160, 65, 5, 2}, 0, 50});
     size_t rule = 0;
     size_t ruleIndex = 0;
     //while (rules.ruleTable[rule].currentDepth < rules.ruleTable[rule].maxDepth) {
     while (rules.ruleStack.size() > 0 || ruleIndex < rules.ruleTable[rule].byteCode.size()) {
-        printf("%u %u %u %u %u\n", rules.ruleTable[rule].currentDepth, rules.ruleTable[rule].maxDepth, rule, ruleIndex, rules.ruleTable[rule].byteCode[ruleIndex]);
+        //printf("%u %u %u %u %u\n", rules.ruleTable[rule].currentDepth, rules.ruleTable[rule].maxDepth, rule, ruleIndex, rules.ruleTable[rule].byteCode[ruleIndex]);
         if (ruleIndex >= rules.ruleTable[rule].byteCode.size()) {
             rules.ruleTable[rule].currentDepth--;
             rule = rules.ruleStack.back();
@@ -28,7 +28,7 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
             rules.ruleIndexStack.pop_back();
             this->transformationMatrix = this->transformationStack.back();
             this->transformationStack.pop_back();
-            printf("JNB: %u %u\n", rule, ruleIndex);
+            //printf("JNB: %u %u\n", rule, ruleIndex);
             continue;
         }
         if (rules.ruleTable[rule].byteCode[ruleIndex] == 1) {
@@ -36,7 +36,7 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
             float delta;
             memcpy(&delta, rules.ruleTable[rule].byteCode.data() + ruleIndex, 4);
             ruleIndex += 4;
-            printf("tx %f\n", delta);
+            //printf("tx %f\n", delta);
             this->translateX(delta);
         }
         else if (rules.ruleTable[rule].byteCode[ruleIndex] == 2) {
@@ -44,7 +44,7 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
             float delta;
             memcpy(&delta, rules.ruleTable[rule].byteCode.data() + ruleIndex, 4);
             ruleIndex += 4;
-            printf("ty %f\n", delta);
+            //printf("ty %f\n", delta);
             this->translateY(delta);
         }
         else if (rules.ruleTable[rule].byteCode[ruleIndex] == 3) {
@@ -52,12 +52,12 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
             float delta;
             memcpy(&delta, rules.ruleTable[rule].byteCode.data() + ruleIndex, 4);
             ruleIndex += 4;
-            printf("tz %f\n", delta);
+            //printf("tz %f\n", delta);
             this->translateZ(delta);
         }
         else if (rules.ruleTable[rule].byteCode[ruleIndex] == 4) {
             ruleIndex++;
-            printf("box\n");
+            //printf("box\n");
             this->drawBox();
         }
         else if (rules.ruleTable[rule].byteCode[ruleIndex] == 5) {
@@ -70,7 +70,7 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
                 rules.ruleTable[rule].currentDepth++;
                 ruleIndex = 0;
                 this->transformationStack.push_back(this->transformationMatrix);
-                printf("rule %u\n", rule);
+                //printf("rule %u\n", rule);
             }
         }
         else {

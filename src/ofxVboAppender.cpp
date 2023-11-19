@@ -9,6 +9,7 @@ ofxVboAppender::ofxVboAppender(uint32_t maxVertexCount)
     : vertexCount(0), updatedVertexCount(0), maxVertexCount(maxVertexCount)
 {
     positionBuffer.allocate(maxVertexCount * positionSize, GL_STATIC_DRAW);
+    printf("allocate buffer: %u\n", maxVertexCount * positionSize);
     vbo.setVertexBuffer(positionBuffer, 3, positionSize);
     colorBuffer.allocate(maxVertexCount * colorSize, GL_STATIC_DRAW);
     vbo.setColorBuffer(colorBuffer, colorSize);
@@ -27,6 +28,9 @@ void ofxVboAppender::append(ofVec3f position, ofVec4f color, ofVec3f normal)
     normalData.push_back(normal);
 
     vertexCount++;
+
+    //if (vertexCount % 100 == 0)
+    //    printf("num vertices: %u\n", vertexCount);
 }
 
 void ofxVboAppender::append(ofMesh &mesh, ofVec4f color)
@@ -62,9 +66,10 @@ void ofxVboAppender::append(ofMesh &mesh, ofVec4f color, ofMatrix4x4 &transformM
 void ofxVboAppender::draw()
 {
     if (vertexCount > updatedVertexCount) {
-        positionBuffer.updateData(updatedVertexCount * positionSize, vertexCount * positionSize, positionData.data());
-        colorBuffer.updateData(updatedVertexCount * colorSize, vertexCount * colorSize, colorData.data());
-        normalBuffer.updateData(updatedVertexCount * normalSize, vertexCount * normalSize, normalData.data());
+        positionBuffer.updateData(updatedVertexCount * positionSize, (vertexCount - updatedVertexCount) * positionSize, positionData.data());
+        printf("update buffer: %u %u\n", updatedVertexCount * positionSize, vertexCount * positionSize);
+        colorBuffer.updateData(updatedVertexCount * colorSize, (vertexCount - updatedVertexCount) * colorSize, colorData.data());
+        normalBuffer.updateData(updatedVertexCount * normalSize, (vertexCount - updatedVertexCount) * normalSize, normalData.data());
         updatedVertexCount = vertexCount;
         positionData.clear();
         colorData.clear();

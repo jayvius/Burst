@@ -8,7 +8,7 @@
 class ofxVboAppender
 {
 public:
-	ofxVboAppender(uint32_t maxVertexCount = 1000000);
+	ofxVboAppender(uint32_t maxVertexCount = 10000000);
 	void append(ofVec3f position, ofVec4f color, ofVec3f normal);
 	void append(ofMesh &mesh, ofVec4f color);
 	void append(ofMesh &mesh, ofVec4f color, ofMatrix4x4 &transformMatrix);
