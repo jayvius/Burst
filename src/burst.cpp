@@ -13,7 +13,8 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
 {
     Rules rules;
     rules.ruleTable.push_back({{5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 3});
-    rules.ruleTable.push_back({{4, 1, 0, 0, 160, 65, 5, 1}, 0, 3});
+    rules.ruleTable.push_back({{5, 2, 3, 0, 0, 160, 65, 5, 1}, 0, 3});
+    rules.ruleTable.push_back({{4, 1, 0, 0, 160, 65, 5, 2}, 0, 3});
     size_t rule = 0;
     size_t ruleIndex = 0;
     //while (rules.ruleTable[rule].currentDepth < rules.ruleTable[rule].maxDepth) {
@@ -45,6 +46,14 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
             ruleIndex += 4;
             printf("ty %f\n", delta);
             this->translateY(delta);
+        }
+        else if (rules.ruleTable[rule].byteCode[ruleIndex] == 3) {
+            ruleIndex++;
+            float delta;
+            memcpy(&delta, rules.ruleTable[rule].byteCode.data() + ruleIndex, 4);
+            ruleIndex += 4;
+            printf("tz %f\n", delta);
+            this->translateZ(delta);
         }
         else if (rules.ruleTable[rule].byteCode[ruleIndex] == 4) {
             ruleIndex++;
