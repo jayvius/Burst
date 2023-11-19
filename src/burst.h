@@ -9,6 +9,21 @@
 #include "ofxVboAppender.h"
 #include "server.h"
 
+
+struct Rule
+{
+    std::vector<uint8_t> byteCode;
+    size_t currentDepth;
+    size_t maxDepth;
+};
+
+struct Rules
+{
+    std::vector<Rule> ruleTable;
+    std::vector<size_t> ruleStack;
+    std::vector<size_t> ruleIndexStack;
+};
+
 class Burst
 {
 public:
