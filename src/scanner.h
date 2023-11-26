@@ -31,7 +31,7 @@ public:
     std::optional<Token> peek();
     
 private:
-    void eval_token(std::string &src, std::optional<size_t> &token_start, size_t &current);
+    void eval_token(std::string &src, std::optional<size_t> &token_start, size_t current);
 
     std::string src;
     std::vector<Token> tokens;
