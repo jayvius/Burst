@@ -44,14 +44,24 @@ Scanner::Scanner(string src)
     size_t i = 0;
     size_t line = 1;
     std::optional<size_t> token_start = std::nullopt;
+    bool comment = false;
     while (i < src.size()) {
-        if (src[i] == ' ' || src[i] == '\t' || src[i] == '\n' || src[i] == ':') {
+        if (comment) {
+            if (src[i] == '\n')
+                comment = false;
+            i++;
+            continue;
+        }
+        else if (src[i] == ' ' || src[i] == '\t' || src[i] == '\n' || src[i] == ':' || src[i] == '#') {
             eval_token(src, token_start, i);
+            token_start = std::nullopt;
 
             if (src[i] == '\n')
                 tokens.push_back({TokenType::Endline, "\n", line++});
             else if (src[i] == ':')
                 tokens.push_back({TokenType::Colon, ":", line});
+            else if (src[i] == '#')
+                comment = true;
 
             i++;
             continue;
@@ -87,7 +97,6 @@ void Scanner::eval_token(std::string &src, std::optional<size_t> &token_start, s
             type = TokenType::RuleName;
         }
         tokens.push_back({type, lexeme, 0});
-        token_start = std::nullopt;
     }
 }
 

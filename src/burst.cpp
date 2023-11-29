@@ -13,8 +13,11 @@ void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
 {
     Rules rules;
     rules.ruleTable.push_back({{5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 50});
+    // R0 maxdepth 50 : R1 ty 20.0 R0
     rules.ruleTable.push_back({{5, 2, 3, 0, 0, 160, 65, 5, 1}, 0, 50});
+    // R1 maxdepth 50 : R2 tz 20.0 R1
     rules.ruleTable.push_back({{4, 1, 0, 0, 160, 65, 5, 2}, 0, 50});
+    // R2 maxdepth 50 : box tx 20.0 R2
     size_t rule = 0;
     size_t ruleIndex = 0;
     //while (rules.ruleTable[rule].currentDepth < rules.ruleTable[rule].maxDepth) {
