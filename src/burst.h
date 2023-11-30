@@ -8,27 +8,14 @@
 #include <mutex>
 #include "ofxVboAppender.h"
 #include "server.h"
-
-
-struct Rule
-{
-    std::vector<uint8_t> byteCode;
-    size_t currentDepth;
-    size_t maxDepth;
-};
-
-struct Rules
-{
-    std::vector<Rule> ruleTable;
-    std::vector<size_t> ruleStack;
-    std::vector<size_t> ruleIndexStack;
-};
+#include "rules.h"
 
 class Burst
 {
 public:
     Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex);
-    void run(std::unique_ptr<ByteCodeStreamer> streamer);
+    void load(std::string src);
+    void run();
 
 private:
     void translateX(float delta);
@@ -40,6 +27,7 @@ private:
     std::mutex &updateMutex;
     ofMatrix4x4 transformationMatrix;
     std::vector<ofMatrix4x4> transformationStack;
+    Rules rules;
 };
 
 #endif

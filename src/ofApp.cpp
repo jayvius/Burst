@@ -38,7 +38,8 @@ void ofApp::setup()
     camera.removeAllInteractions();
     camera.setFarClip(100000.0);
     
-    thread t(&Burst::run, this->burst, std::make_unique<NetworkStreamer>());
+    this->burst.load("tx 20 box");
+    thread t(&Burst::run, this->burst);
     t.detach();
 }
 

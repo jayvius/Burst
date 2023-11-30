@@ -2,6 +2,8 @@
 #include "ofGraphics.h"
 #include "ofMatrix4x4.h"
 #include "of3dPrimitives.h"
+#include "scanner.h"
+#include "parser.h"
 
 Burst::Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex)
     : vboAppender(vboAppender), updateMutex(updateMutex)
@@ -9,15 +11,23 @@ Burst::Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex)
 
 }
 
-void Burst::run(std::unique_ptr<ByteCodeStreamer> streamer)
+void Burst::load(std::string src)
 {
-    Rules rules;
-    rules.ruleTable.push_back({{5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 50});
+    Scanner scanner(src);
+    //while (std::optional<Token> t = scanner.next()) {
+    //    printf("%u %s\n", t->type, t->lexeme.c_str());
+    //}
+    parse(scanner, rules);
     // R0 maxdepth 50 : R1 ty 20.0 R0
-    rules.ruleTable.push_back({{5, 2, 3, 0, 0, 160, 65, 5, 1}, 0, 50});
+    //rules.ruleTable.push_back({"R0", {5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 50});
     // R1 maxdepth 50 : R2 tz 20.0 R1
-    rules.ruleTable.push_back({{4, 1, 0, 0, 160, 65, 5, 2}, 0, 50});
+    //rules.ruleTable.push_back({"R1", {5, 2, 3, 0, 0, 160, 65, 5, 1}, 0, 50});
     // R2 maxdepth 50 : box tx 20.0 R2
+    //rules.ruleTable.push_back({"R2", {4, 1, 0, 0, 160, 65, 5, 2}, 0, 50});
+}
+
+void Burst::run()
+{
     size_t rule = 0;
     size_t ruleIndex = 0;
     //while (rules.ruleTable[rule].currentDepth < rules.ruleTable[rule].maxDepth) {

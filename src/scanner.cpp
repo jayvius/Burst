@@ -53,7 +53,7 @@ Scanner::Scanner(string src)
             continue;
         }
         else if (src[i] == ' ' || src[i] == '\t' || src[i] == '\n' || src[i] == ':' || src[i] == '#') {
-            eval_token(src, token_start, i);
+            eval_token(src, token_start, i, line);
             token_start = std::nullopt;
 
             if (src[i] == '\n')
@@ -73,13 +73,13 @@ Scanner::Scanner(string src)
         i++;
     }
 
-    eval_token(src, token_start, i);
+    eval_token(src, token_start, i, line);
     tokens.push_back({TokenType::End, "", line});
 
     it = tokens.cbegin();
 }
 
-void Scanner::eval_token(std::string &src, std::optional<size_t> &token_start, size_t current)
+void Scanner::eval_token(std::string &src, std::optional<size_t> &token_start, size_t current, size_t line)
 {
     if (token_start) {
         TokenType type;
@@ -96,7 +96,7 @@ void Scanner::eval_token(std::string &src, std::optional<size_t> &token_start, s
         else {
             type = TokenType::RuleName;
         }
-        tokens.push_back({type, lexeme, 0});
+        tokens.push_back({type, lexeme, line});
     }
 }
 

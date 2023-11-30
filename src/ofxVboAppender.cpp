@@ -67,7 +67,7 @@ void ofxVboAppender::draw()
 {
     if (vertexCount > updatedVertexCount) {
         positionBuffer.updateData(updatedVertexCount * positionSize, (vertexCount - updatedVertexCount) * positionSize, positionData.data());
-        printf("update buffer: %u %u\n", updatedVertexCount * positionSize, vertexCount * positionSize);
+        //printf("update buffer: %u %u\n", updatedVertexCount * positionSize, vertexCount * positionSize);
         colorBuffer.updateData(updatedVertexCount * colorSize, (vertexCount - updatedVertexCount) * colorSize, colorData.data());
         normalBuffer.updateData(updatedVertexCount * normalSize, (vertexCount - updatedVertexCount) * normalSize, normalData.data());
         updatedVertexCount = vertexCount;
