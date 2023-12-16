@@ -1,0 +1,46 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/3d",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/app",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/communication",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/events",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/gl",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/graphics",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/math",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/sound",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/types",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/utils",
+                "/Users/jayvius/Projects/openFrameworks/libs/openFrameworks/video",
+                "/Users/jayvius/Projects/openFrameworks/libs/FreeImage/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/boost/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/cairo/include/cairo",
+                "/Users/jayvius/Projects/openFrameworks/libs/curl/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/fmod/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/freetype/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/glew/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/glfw/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/glm/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/json/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/pugixml/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/rtAudio/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/tess2/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/uriparser/include",
+                "/Users/jayvius/Projects/openFrameworks/libs/utf8/include"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64"
+        }
+    ],
+    "version": 4
+}
