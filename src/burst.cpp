@@ -86,6 +86,9 @@ void Burst::run()
                 //printf("rule %u\n", rule);
             }
         }
+        else if (rules.ruleTable[rule].byteCode[ruleIndex] == static_cast<uint8_t>(OpCode::exit)) {
+            return;
+        }
         else {
             uint8_t temp = rules.ruleTable[rule].byteCode[ruleIndex];
             fprintf(stderr, "ERROR: invalid command: %u\n", temp);

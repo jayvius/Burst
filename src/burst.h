@@ -10,6 +10,16 @@
 #include "server.h"
 #include "rules.h"
 
+enum class OpCode
+{
+    exit = 0,
+    translateX,
+    translateY,
+    translateZ,
+    drawBox,
+    callRule,
+};
+
 class Burst
 {
 public:

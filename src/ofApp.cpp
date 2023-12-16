@@ -38,7 +38,7 @@ void ofApp::setup()
     camera.removeAllInteractions();
     camera.setFarClip(100000.0);
     
-    this->burst.load("tx 20 box");
+    this->burst.load("tx 20.0 box");
     thread t(&Burst::run, this->burst);
     t.detach();
 }
