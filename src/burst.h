@@ -9,16 +9,7 @@
 #include "ofxVboAppender.h"
 #include "server.h"
 #include "rules.h"
-
-enum class OpCode
-{
-    exit = 0,
-    translateX,
-    translateY,
-    translateZ,
-    drawBox,
-    callRule,
-};
+#include "opcodes.h"
 
 class Burst
 {
