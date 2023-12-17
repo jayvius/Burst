@@ -6,8 +6,14 @@
 #include <optional>
 #include "opcodes.h"
 
-struct Rule
+class Rule
 {
+public:
+    Rule(std::string name, size_t maxDepth);
+    void writeOpCode(OpCode opcode);
+    void writeFloat(float value);
+    void writeInt(uint8_t value);
+
     std::string name;
     std::vector<uint8_t> byteCode;
     size_t currentDepth;
@@ -20,12 +26,5 @@ struct Rules
     std::vector<size_t> ruleStack;
     std::vector<size_t> ruleIndexStack;
 };
-
-size_t addRule(Rules &rules, std::string name, size_t maxDepth);
-std::optional<size_t> getRuleIndex(Rules &rules, std::string name);
-
-void emitOpCode(Rules &rules, size_t ruleIndex, OpCode opcode);
-void emitInt(Rules &rules, size_t ruleIndex, uint8_t value);
-void emitFloat(Rules &rules, size_t ruleIndex, float value);
 
 #endif

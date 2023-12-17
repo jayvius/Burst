@@ -10,32 +10,35 @@ void parseError(Token &t, std::string error)
     exit(1);
 }
 
-void parseCommand(Scanner &scanner, Token &t, Rules &rules, size_t ruleIndex)
+void parseCommand(Scanner &scanner, Token &t, Rule &rule)
 {
     if (t.lexeme == "box")
-        emitOpCode(rules, ruleIndex, OpCode::drawBox);
+        rule.writeOpCode(OpCode::drawBox);
     else if (t.lexeme == "tx") {
-        emitOpCode(rules, ruleIndex, OpCode::translateX);
+        rule.writeOpCode(OpCode::translateX);
         std::optional<Token> t2 = scanner.next();
         if (!t2 || t2->type != TokenType::Float)
             parseError(t, "expected float argument for 'tx' command ");
         float arg = stof(t2->lexeme);
-        emitFloat(rules, ruleIndex, arg);
+        rule.writeFloat(arg);
     }
     else
         parseError(t, "invalid command " + t.lexeme);
 }
 
-void parse(Scanner &scanner, Rules &rules)
+std::vector<Rule> parse(Scanner &scanner)
 {
-    size_t currentRuleIndex = addRule(rules, "", 0);
+    std::vector<Rule> rules;
+    rules.push_back(Rule("", 0));
+    size_t ruleIndex = 0;
 
     while (std::optional<Token> t = scanner.next()) {
         if (!t || t->type == TokenType::End)
-            return;
+            return rules;
         else if (t->type == TokenType::Command)
-            parseCommand(scanner, *t, rules, currentRuleIndex);
+            parseCommand(scanner, *t, rules[ruleIndex]);
         else
             parseError(*t, "invalid token " + t->lexeme);
     }
+    return rules;
 }

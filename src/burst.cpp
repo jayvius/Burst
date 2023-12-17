@@ -17,7 +17,7 @@ void Burst::load(std::string src)
     //while (std::optional<Token> t = scanner.next()) {
     //    printf("%u %s\n", t->type, t->lexeme.c_str());
     //}
-    parse(scanner, rules);
+    rules.ruleTable = parse(scanner);
     // R0 maxdepth 50 : R1 ty 20.0 R0
     //rules.ruleTable.push_back({"R0", {5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 50});
     // R1 maxdepth 50 : R2 tz 20.0 R1
