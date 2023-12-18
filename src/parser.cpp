@@ -4,6 +4,25 @@
 #include <cstdlib>
 #include <format>
 
+void writeOpCode(Rule &rule, OpCode opcode)
+{
+    rule.byteCode.push_back(static_cast<uint8_t>(opcode));
+}
+
+void writeInt(Rule &rule, uint8_t value)
+{
+    rule.byteCode.push_back(value);
+}
+
+void writeFloat(Rule &rule, float value)
+{
+    uint8_t temp[4];
+    memcpy(temp, &value, sizeof(float));
+    rule.byteCode.push_back(temp[0]);
+    rule.byteCode.push_back(temp[1]);
+    rule.byteCode.push_back(temp[2]);
+    rule.byteCode.push_back(temp[3]);
+}
 void parseError(Token &t, std::string error)
 {
     printf("parse error (line %u): %s\n", t.line, error.c_str());
@@ -13,14 +32,14 @@ void parseError(Token &t, std::string error)
 void parseCommand(Scanner &scanner, Token &t, Rule &rule)
 {
     if (t.lexeme == "box")
-        rule.writeOpCode(OpCode::drawBox);
+        writeOpCode(rule, OpCode::drawBox);
     else if (t.lexeme == "tx") {
-        rule.writeOpCode(OpCode::translateX);
+        writeOpCode(rule, OpCode::translateX);
         std::optional<Token> t2 = scanner.next();
         if (!t2 || t2->type != TokenType::Float)
             parseError(t, "expected float argument for 'tx' command ");
         float arg = stof(t2->lexeme);
-        rule.writeFloat(arg);
+        writeFloat(rule, arg);
     }
     else
         parseError(t, "invalid command " + t.lexeme);
@@ -29,7 +48,7 @@ void parseCommand(Scanner &scanner, Token &t, Rule &rule)
 std::vector<Rule> parse(Scanner &scanner)
 {
     std::vector<Rule> rules;
-    rules.push_back(Rule("", 0));
+    rules.push_back({"", {}, 0, 0});
     size_t ruleIndex = 0;
 
     while (std::optional<Token> t = scanner.next()) {

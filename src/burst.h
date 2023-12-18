@@ -28,7 +28,9 @@ private:
     std::mutex &updateMutex;
     ofMatrix4x4 transformationMatrix;
     std::vector<ofMatrix4x4> transformationStack;
-    Rules rules;
+    std::vector<Rule> rules;
+    std::vector<size_t> ruleStack;
+    std::vector<size_t> ruleIndexStack;
 };
 
 #endif
