@@ -1,12 +1,13 @@
 #include "ofApp.h"
 #include <glm/gtx/string_cast.hpp>
 #include "server.h"
+#include "burst.h"
 #include <thread>
 
 using std::thread;
 
 ofApp::ofApp()
-    : dampen(0.4), burst(vboAppender, updateMutex)
+    : dampen(0.4)
 {
 
 }
@@ -38,8 +39,7 @@ void ofApp::setup()
     camera.removeAllInteractions();
     camera.setFarClip(100000.0);
     
-    this->burst.load("tx 20.0 box");
-    thread t(&Burst::run, this->burst);
+    thread t(run, "box", std::ref(vboAppender), std::ref(updateMutex));
     t.detach();
 }
 

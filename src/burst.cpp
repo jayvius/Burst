@@ -4,7 +4,9 @@
 #include "of3dPrimitives.h"
 #include "scanner.h"
 #include "parser.h"
+#include "opcodes.h"
 
+/*
 Burst::Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex)
     : vboAppender(vboAppender), updateMutex(updateMutex)
 {
@@ -31,9 +33,9 @@ void Burst::run()
     size_t rule = 0;
     size_t ruleIndex = 0;
     //while (rules.ruleTable[rule].currentDepth < rules.ruleTable[rule].maxDepth) {
-    while (ruleStack.size() > 0 || ruleIndex < rules[rule].byteCode.size()) {
-        //printf("%u %u %u %u %u\n", rules.ruleTable[rule].currentDepth, rules.ruleTable[rule].maxDepth, rule, ruleIndex, rules.ruleTable[rule].byteCode[ruleIndex]);
-        if (ruleIndex >= rules[rule].byteCode.size()) {
+    while (ruleStack.size() > 0 || ruleIndex < rules[rule].bytecode.size()) {
+        //printf("%u %u %u %u %u\n", rules.ruleTable[rule].currentDepth, rules.ruleTable[rule].maxDepth, rule, ruleIndex, rules.ruleTable[rule].bytecode[ruleIndex]);
+        if (ruleIndex >= rules[rule].bytecode.size()) {
             rules[rule].currentDepth--;
             rule = ruleStack.back();
             ruleStack.pop_back();
@@ -44,38 +46,38 @@ void Burst::run()
             //printf("JNB: %u %u\n", rule, ruleIndex);
             continue;
         }
-        if (rules[rule].byteCode[ruleIndex] == 1) {
+        if (rules[rule].bytecode[ruleIndex] == 1) {
             ruleIndex++;
             float delta;
-            memcpy(&delta, rules[rule].byteCode.data() + ruleIndex, 4);
+            memcpy(&delta, rules[rule].bytecode.data() + ruleIndex, 4);
             ruleIndex += 4;
             //printf("tx %f\n", delta);
             this->translateX(delta);
         }
-        else if (rules[rule].byteCode[ruleIndex] == 2) {
+        else if (rules[rule].bytecode[ruleIndex] == 2) {
             ruleIndex++;
             float delta;
-            memcpy(&delta, rules[rule].byteCode.data() + ruleIndex, 4);
+            memcpy(&delta, rules[rule].bytecode.data() + ruleIndex, 4);
             ruleIndex += 4;
             //printf("ty %f\n", delta);
             this->translateY(delta);
         }
-        else if (rules[rule].byteCode[ruleIndex] == 3) {
+        else if (rules[rule].bytecode[ruleIndex] == 3) {
             ruleIndex++;
             float delta;
-            memcpy(&delta, rules[rule].byteCode.data() + ruleIndex, 4);
+            memcpy(&delta, rules[rule].bytecode.data() + ruleIndex, 4);
             ruleIndex += 4;
             //printf("tz %f\n", delta);
             this->translateZ(delta);
         }
-        else if (rules[rule].byteCode[ruleIndex] == 4) {
+        else if (rules[rule].bytecode[ruleIndex] == 4) {
             ruleIndex++;
             //printf("box\n");
             this->drawBox();
         }
-        else if (rules[rule].byteCode[ruleIndex] == 5) {
+        else if (rules[rule].bytecode[ruleIndex] == 5) {
             ruleIndex++;
-            size_t nextRule = rules[rule].byteCode[ruleIndex++];
+            size_t nextRule = rules[rule].bytecode[ruleIndex++];
             if (rules[nextRule].currentDepth < rules[nextRule].maxDepth) {
                 ruleStack.push_back(rule);
                 ruleIndexStack.push_back(ruleIndex);
@@ -86,40 +88,15 @@ void Burst::run()
                 //printf("rule %u\n", rule);
             }
         }
-        else if (rules[rule].byteCode[ruleIndex] == static_cast<uint8_t>(OpCode::exit)) {
+        else if (rules[rule].bytecode[ruleIndex] == static_cast<uint8_t>(OpCode::exit)) {
             return;
         }
         else {
-            uint8_t temp = rules[rule].byteCode[ruleIndex];
+            uint8_t temp = rules[rule].bytecode[ruleIndex];
             fprintf(stderr, "ERROR: invalid command: %u\n", temp);
             exit(1);
         }
     }
-    /*
-    std::vector<uint8_t> buffer(5, 0);
-    while (true) {
-        size_t count = streamer->get(buffer.data(), 1);
-        printf("count: %u\n", count);
-        for (int i = 0; i < count; i++) {
-            printf("data: %x ", buffer[i]);
-        }
-        printf("\n");
-        if (buffer[0] == 1) {
-            count = streamer->get(buffer.data(), 4);
-            printf("count: %u\n", count);
-            for (int i = 0; i < count; i++) {
-                printf("data: %x ", buffer[i]);
-            }
-            float delta;
-            memcpy(&delta, buffer.data(), 4);
-            printf("tx: %f\n", delta);
-            this->translateX(delta);
-        }
-        else if (buffer[0] == 4) {
-            printf("box\n");
-            this->drawBox();
-        }
-    }*/
 }
 
 void Burst::translateX(float delta)
@@ -147,4 +124,60 @@ void Burst::drawBox()
 {
     std::lock_guard<std::mutex> guard(this->updateMutex);
     vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, this->transformationMatrix);
+}
+*/
+
+OpCode readOpCode(Rule &rule, size_t &bytecodeIndex)
+{
+    return OpCode(rule.bytecode[bytecodeIndex++]);
+}
+
+void drawBox(ofMatrix4x4 &transformMatrix, ofxVboAppender &vboAppender, std::mutex &updateMutex)
+{
+    std::lock_guard<std::mutex> guard(updateMutex);
+    vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, transformMatrix);
+}
+
+void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
+{
+    Scanner scanner(src);
+    std::vector<Rule> rules = parse(scanner);
+
+    std::vector<ofMatrix4x4> transformationStack;
+    std::vector<size_t> ruleIndexStack;
+    std::vector<size_t> bytecodeIndexStack;
+
+    size_t ruleIndex = 0;
+    size_t bytecodeIndex = 0;
+    ofMatrix4x4 transformationMatrix;
+
+    while (true) {
+        if (bytecodeIndex >= rules[ruleIndex].bytecode.size()) {
+            if (ruleIndexStack.empty() || bytecodeIndexStack.empty())
+                break;
+            
+            ruleIndex = ruleIndexStack.back();
+            ruleIndexStack.pop_back();
+            bytecodeIndex = bytecodeIndexStack.back();
+            bytecodeIndexStack.pop_back();
+        }
+
+        OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
+        if (opcode == OpCode::drawBox) {
+            drawBox(transformationMatrix, vboAppender, updateMutex);
+        }
+    }
+
+    /*
+    while (bytecodeIndex < rules[ruleIndex].bytecode.size()) {
+        OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
+        if (opcode == OpCode::drawBox) {
+            drawBox(transformationMatrix, vboAppender, updateMutex);
+        }
+        else if (opcode == OpCode::translateX) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            translateX(transformationMatrix, delta);
+        }
+    }
+    */
 }

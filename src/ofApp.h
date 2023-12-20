@@ -2,7 +2,6 @@
 
 #include "ofMain.h"
 #include "ofxVboAppender.h"
-#include "burst.h"
 
 class ofApp : public ofBaseApp
 {
@@ -23,7 +22,6 @@ private:
 
     ofxVboAppender vboAppender;
     std::mutex updateMutex;
-    Burst burst;
 		
     // Model rotation
     glm::quat modelRotation;

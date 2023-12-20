@@ -9,7 +9,7 @@
 struct Rule
 {
     std::string name;
-    std::vector<uint8_t> byteCode;
+    std::vector<uint8_t> bytecode;
     size_t currentDepth;
     size_t maxDepth;
 };

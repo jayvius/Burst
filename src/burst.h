@@ -11,26 +11,28 @@
 #include "rules.h"
 #include "opcodes.h"
 
-class Burst
-{
-public:
-    Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex);
-    void load(std::string src);
-    void run();
+// class Burst
+// {
+// public:
+//     Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex);
+//     void load(std::string src);
+//     void run();
 
-private:
-    void translateX(float delta);
-    void translateY(float delta);
-    void translateZ(float delta);
-    void drawBox();
+// private:
+//     void translateX(float delta);
+//     void translateY(float delta);
+//     void translateZ(float delta);
+//     void drawBox();
 
-    ofxVboAppender &vboAppender;
-    std::mutex &updateMutex;
-    ofMatrix4x4 transformationMatrix;
-    std::vector<ofMatrix4x4> transformationStack;
-    std::vector<Rule> rules;
-    std::vector<size_t> ruleStack;
-    std::vector<size_t> ruleIndexStack;
-};
+//     ofxVboAppender &vboAppender;
+//     std::mutex &updateMutex;
+//     ofMatrix4x4 transformationMatrix;
+//     std::vector<ofMatrix4x4> transformationStack;
+//     std::vector<Rule> rules;
+//     std::vector<size_t> ruleStack;
+//     std::vector<size_t> ruleIndexStack;
+// };
+
+void run(std::string src, ofxVboAppender &ofxVboAppender, std::mutex &updateMutex);
 
 #endif

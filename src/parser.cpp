@@ -6,22 +6,22 @@
 
 void writeOpCode(Rule &rule, OpCode opcode)
 {
-    rule.byteCode.push_back(static_cast<uint8_t>(opcode));
+    rule.bytecode.push_back(static_cast<uint8_t>(opcode));
 }
 
 void writeInt(Rule &rule, uint8_t value)
 {
-    rule.byteCode.push_back(value);
+    rule.bytecode.push_back(value);
 }
 
 void writeFloat(Rule &rule, float value)
 {
     uint8_t temp[4];
     memcpy(temp, &value, sizeof(float));
-    rule.byteCode.push_back(temp[0]);
-    rule.byteCode.push_back(temp[1]);
-    rule.byteCode.push_back(temp[2]);
-    rule.byteCode.push_back(temp[3]);
+    rule.bytecode.push_back(temp[0]);
+    rule.bytecode.push_back(temp[1]);
+    rule.bytecode.push_back(temp[2]);
+    rule.bytecode.push_back(temp[3]);
 }
 void parseError(Token &t, std::string error)
 {
