@@ -39,7 +39,7 @@ void ofApp::setup()
     camera.removeAllInteractions();
     camera.setFarClip(100000.0);
     
-    thread t(run, "box", std::ref(vboAppender), std::ref(updateMutex));
+    thread t(run, "tx 20.0 ty 20.0 tz 20.0 box", std::ref(vboAppender), std::ref(updateMutex));
     t.detach();
 }
 

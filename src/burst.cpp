@@ -132,10 +132,39 @@ OpCode readOpCode(Rule &rule, size_t &bytecodeIndex)
     return OpCode(rule.bytecode[bytecodeIndex++]);
 }
 
+float readFloat(Rule &rule, size_t &bytecodeIndex)
+{
+    float temp;
+    memcpy(&temp, &rule.bytecode[bytecodeIndex], sizeof(float));
+    bytecodeIndex += sizeof(float);
+    return temp;
+}
+
 void drawBox(ofMatrix4x4 &transformMatrix, ofxVboAppender &vboAppender, std::mutex &updateMutex)
 {
     std::lock_guard<std::mutex> guard(updateMutex);
     vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, transformMatrix);
+}
+
+void translateX(ofMatrix4x4 &transformMatrix, float delta)
+{
+    ofMatrix4x4 m;
+    m.makeTranslationMatrix(delta, 0.0, 0.0);
+    transformMatrix *= m;
+}
+
+void translateY(ofMatrix4x4 &transformMatrix, float delta)
+{
+    ofMatrix4x4 m;
+    m.makeTranslationMatrix(0.0, delta, 0.0);
+    transformMatrix *= m;
+}
+
+void translateZ(ofMatrix4x4 &transformMatrix, float delta)
+{
+    ofMatrix4x4 m;
+    m.makeTranslationMatrix(0.0, 0.0, delta);
+    transformMatrix *= m;
 }
 
 void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
@@ -165,6 +194,18 @@ void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
         OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
         if (opcode == OpCode::drawBox) {
             drawBox(transformationMatrix, vboAppender, updateMutex);
+        }
+        else if (opcode == OpCode::translateX) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            translateX(transformationMatrix, delta);
+        }
+        else if (opcode == OpCode::translateY) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            translateY(transformationMatrix, delta);
+        }
+        else if (opcode == OpCode::translateZ) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            translateZ(transformationMatrix, delta);
         }
     }
 

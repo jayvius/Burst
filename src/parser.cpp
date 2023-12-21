@@ -41,6 +41,22 @@ void parseCommand(Scanner &scanner, Token &t, Rule &rule)
         float arg = stof(t2->lexeme);
         writeFloat(rule, arg);
     }
+    else if (t.lexeme == "ty") {
+        writeOpCode(rule, OpCode::translateY);
+        std::optional<Token> t2 = scanner.next();
+        if (!t2 || t2->type != TokenType::Float)
+            parseError(t, "expected float argument for 'ty' command ");
+        float arg = stof(t2->lexeme);
+        writeFloat(rule, arg);
+    }
+    else if (t.lexeme == "tz") {
+        writeOpCode(rule, OpCode::translateZ);
+        std::optional<Token> t2 = scanner.next();
+        if (!t2 || t2->type != TokenType::Float)
+            parseError(t, "expected float argument for 'tz' command ");
+        float arg = stof(t2->lexeme);
+        writeFloat(rule, arg);
+    }
     else
         parseError(t, "invalid command " + t.lexeme);
 }
