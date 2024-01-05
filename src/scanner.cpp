@@ -109,7 +109,7 @@ std::optional<Token> Scanner::next()
 
 std::optional<Token> Scanner::peek()
 {
-    if ((it + 1) == tokens.cend())
+    if (it == tokens.cend())
         return std::nullopt;
-    return std::make_optional<Token>(*(it + 1));
+    return std::make_optional<Token>(*it);
 }

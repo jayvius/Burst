@@ -140,6 +140,14 @@ float readFloat(Rule &rule, size_t &bytecodeIndex)
     return temp;
 }
 
+uint8_t readInt(Rule &rule, size_t &bytecodeIndex)
+{
+    uint8_t temp;
+    memcpy(&temp, &rule.bytecode[bytecodeIndex], sizeof(uint8_t));
+    bytecodeIndex += sizeof(uint8_t);
+    return temp;
+}
+
 void drawBox(ofMatrix4x4 &transformMatrix, ofxVboAppender &vboAppender, std::mutex &updateMutex)
 {
     std::lock_guard<std::mutex> guard(updateMutex);
@@ -167,6 +175,12 @@ void translateZ(ofMatrix4x4 &transformMatrix, float delta)
     transformMatrix *= m;
 }
 
+void runtimeError(std::string error)
+{
+    printf("runtime error: %s\n", error.c_str());
+    exit(1);
+}
+
 void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
 {
     Scanner scanner(src);
@@ -189,6 +203,8 @@ void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
             ruleIndexStack.pop_back();
             bytecodeIndex = bytecodeIndexStack.back();
             bytecodeIndexStack.pop_back();
+            transformationMatrix = transformationStack.back();
+            transformationStack.pop_back();
         }
 
         OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
@@ -206,6 +222,23 @@ void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
         else if (opcode == OpCode::translateZ) {
             float delta = readFloat(rules[ruleIndex], bytecodeIndex);
             translateZ(transformationMatrix, delta);
+        }
+        else if (opcode == OpCode::callRule) {
+            uint8_t nextRuleIndex = readInt(rules[ruleIndex], bytecodeIndex);
+            if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
+                continue;
+            rules[nextRuleIndex].currentDepth++;
+            ruleIndexStack.push_back(ruleIndex);
+            ruleIndex = nextRuleIndex;
+            bytecodeIndexStack.push_back(bytecodeIndex);
+            bytecodeIndex = 0;
+            transformationStack.push_back(transformationMatrix);
+        }
+        else if (opcode == OpCode::exit) {
+            continue;
+        }
+        else {
+            runtimeError("invalid opcode");
         }
     }
 

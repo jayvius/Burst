@@ -61,6 +61,48 @@ void parseCommand(Scanner &scanner, Token &t, Rule &rule)
         parseError(t, "invalid command " + t.lexeme);
 }
 
+void parseRuleCall(Scanner &scanner, Token &t, std::vector<Rule> &rules, size_t ruleIndex)
+{
+    printf("parseRuleCall()\n");
+    size_t nextRuleIndex = 0;
+    for (auto i = 0; i < rules.size(); i++) {
+        if (rules[i].name == t.lexeme) {
+            nextRuleIndex = i;
+            break;
+        }
+    }
+    if (nextRuleIndex == 0)
+        parseError(t, "unknown rule " + t.lexeme);
+    writeOpCode(rules[ruleIndex], OpCode::callRule);
+    writeInt(rules[ruleIndex], static_cast<uint8_t>(nextRuleIndex));
+}
+
+void parseRuleDef(Scanner &scanner, Token &t, std::vector<Rule> &rules)
+{
+    printf("parseRuleDef()\n");
+    if (rules.size() == 256)
+        parseError(t, "could not add rule " + t.lexeme + "; maximum number of rules reached");
+    rules.push_back({t.lexeme, {}, 0, 50});
+    size_t ruleIndex = rules.size() - 1;
+    // Consume colon
+    scanner.next();
+    while (std::optional<Token> t = scanner.next()) {
+        if (!t || t->type == TokenType::End)
+            break;
+        else if (t->type == TokenType::Endline)
+            break;
+        else if (t->type == TokenType::Command)
+            parseCommand(scanner, *t, rules[ruleIndex]);
+        else if (t->type == TokenType::RuleName)
+            parseRuleCall(scanner, *t, rules, ruleIndex);
+        else
+            parseError(*t, "invalid token " + t->lexeme);
+    }
+
+    writeOpCode(rules[ruleIndex], OpCode::exit);
+    return;
+}
+
 std::vector<Rule> parse(Scanner &scanner)
 {
     std::vector<Rule> rules;
@@ -69,11 +111,14 @@ std::vector<Rule> parse(Scanner &scanner)
 
     while (std::optional<Token> t = scanner.next()) {
         if (!t || t->type == TokenType::End)
-            return rules;
-        else if (t->type == TokenType::Command)
-            parseCommand(scanner, *t, rules[ruleIndex]);
+            break;
+        else if (t->type == TokenType::RuleName && scanner.peek() && scanner.peek()->type == TokenType::Colon)
+            parseRuleDef(scanner, *t, rules);
+        else if (t->type == TokenType::RuleName)
+            parseRuleCall(scanner, *t, rules, ruleIndex);
         else
             parseError(*t, "invalid token " + t->lexeme);
     }
+    writeOpCode(rules[0], OpCode::exit);
     return rules;
 }
