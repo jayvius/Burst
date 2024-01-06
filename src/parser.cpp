@@ -71,8 +71,10 @@ void parseRuleCall(Scanner &scanner, Token &t, std::vector<Rule> &rules, size_t 
             break;
         }
     }
-    if (nextRuleIndex == 0)
-        parseError(t, "unknown rule " + t.lexeme);
+    if (nextRuleIndex == 0) {
+        rules.push_back({t.lexeme, {}, 0, 50});
+        nextRuleIndex = rules.size() - 1;
+    }
     writeOpCode(rules[ruleIndex], OpCode::callRule);
     writeInt(rules[ruleIndex], static_cast<uint8_t>(nextRuleIndex));
 }
@@ -80,10 +82,19 @@ void parseRuleCall(Scanner &scanner, Token &t, std::vector<Rule> &rules, size_t 
 void parseRuleDef(Scanner &scanner, Token &t, std::vector<Rule> &rules)
 {
     printf("parseRuleDef()\n");
-    if (rules.size() == 256)
+    size_t ruleIndex = 0;
+    for (auto i = 0; i < rules.size(); i++) {
+        if (rules[i].name == t.lexeme) {
+            ruleIndex = i;
+            break;
+        }
+    }
+    if (ruleIndex == 0 && rules.size() == 256)
         parseError(t, "could not add rule " + t.lexeme + "; maximum number of rules reached");
-    rules.push_back({t.lexeme, {}, 0, 50});
-    size_t ruleIndex = rules.size() - 1;
+    if (ruleIndex == 0) {
+        rules.push_back({t.lexeme, {}, 0, 50});
+        ruleIndex = rules.size() - 1;
+    }
     // Consume colon
     scanner.next();
     while (std::optional<Token> t = scanner.next()) {
@@ -119,6 +130,14 @@ std::vector<Rule> parse(Scanner &scanner)
         else
             parseError(*t, "invalid token " + t->lexeme);
     }
+
+    for (auto &r: rules) {
+        if (r.bytecode.empty()) {
+            printf("parse error: no definition for rule %s\n", r.name.c_str());
+            exit(1);
+        }
+    }
+
     writeOpCode(rules[0], OpCode::exit);
     return rules;
 }
