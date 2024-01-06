@@ -199,6 +199,7 @@ void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
             if (ruleIndexStack.empty() || bytecodeIndexStack.empty())
                 break;
             
+            rules[ruleIndex].currentDepth--;
             ruleIndex = ruleIndexStack.back();
             ruleIndexStack.pop_back();
             bytecodeIndex = bytecodeIndexStack.back();

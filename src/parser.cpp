@@ -63,7 +63,6 @@ void parseCommand(Scanner &scanner, Token &t, Rule &rule)
 
 void parseRuleCall(Scanner &scanner, Token &t, std::vector<Rule> &rules, size_t ruleIndex)
 {
-    printf("parseRuleCall()\n");
     size_t nextRuleIndex = 0;
     for (auto i = 0; i < rules.size(); i++) {
         if (rules[i].name == t.lexeme) {
@@ -81,7 +80,6 @@ void parseRuleCall(Scanner &scanner, Token &t, std::vector<Rule> &rules, size_t 
 
 void parseRuleDef(Scanner &scanner, Token &t, std::vector<Rule> &rules)
 {
-    printf("parseRuleDef()\n");
     size_t ruleIndex = 0;
     for (auto i = 0; i < rules.size(); i++) {
         if (rules[i].name == t.lexeme) {
