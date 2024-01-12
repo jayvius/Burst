@@ -57,6 +57,38 @@ void parseCommand(Scanner &scanner, Token &t, Rule &rule)
         float arg = stof(t2->lexeme);
         writeFloat(rule, arg);
     }
+    else if (t.lexeme == "rx") {
+        writeOpCode(rule, OpCode::rotateX);
+        std::optional<Token> t2 = scanner.next();
+        if (!t2 || t2->type != TokenType::Float)
+            parseError(t, "expected float argument for 'rx' command ");
+        float arg = stof(t2->lexeme);
+        writeFloat(rule, arg);
+    }
+    else if (t.lexeme == "ry") {
+        writeOpCode(rule, OpCode::rotateY);
+        std::optional<Token> t2 = scanner.next();
+        if (!t2 || t2->type != TokenType::Float)
+            parseError(t, "expected float argument for 'ry' command ");
+        float arg = stof(t2->lexeme);
+        writeFloat(rule, arg);
+    }
+    else if (t.lexeme == "rz") {
+        writeOpCode(rule, OpCode::rotateY);
+        std::optional<Token> t2 = scanner.next();
+        if (!t2 || t2->type != TokenType::Float)
+            parseError(t, "expected float argument for 'rz' command ");
+        float arg = stof(t2->lexeme);
+        writeFloat(rule, arg);
+    }
+    else if (t.lexeme == "s") {
+        writeOpCode(rule, OpCode::scale);
+        std::optional<Token> t2 = scanner.next();
+        if (!t2 || t2->type != TokenType::Float)
+            parseError(t, "expected float argument for 's' command ");
+        float arg = stof(t2->lexeme);
+        writeFloat(rule, arg);
+    }
     else
         parseError(t, "invalid command " + t.lexeme);
 }
@@ -126,7 +158,7 @@ std::vector<Rule> parse(Scanner &scanner)
         else if (t->type == TokenType::RuleName)
             parseRuleCall(scanner, *t, rules, ruleIndex);
         else
-            parseError(*t, "invalid token " + t->lexeme);
+            parseError(*t, "invalid token " + t->lexeme + "; expected rule definition");
     }
 
     for (auto &r: rules) {

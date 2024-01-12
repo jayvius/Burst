@@ -8,7 +8,11 @@ bool isCommand(std::string &lexeme)
     return (lexeme == "box" ||
             lexeme == "tx" ||
             lexeme == "ty" ||
-            lexeme == "tz");
+            lexeme == "tz" ||
+            lexeme == "rx" ||
+            lexeme == "ry" ||
+            lexeme == "rz" ||
+            lexeme == "s");
 }
 
 bool isInt(std::string &lexeme)

@@ -7,6 +7,10 @@ enum class OpCode
     translateX,
     translateY,
     translateZ,
+    rotateX,
+    rotateY,
+    rotateZ,
+    scale,
     drawBox,
     callRule,
 };

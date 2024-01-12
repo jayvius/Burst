@@ -175,6 +175,34 @@ void translateZ(ofMatrix4x4 &transformMatrix, float delta)
     transformMatrix *= m;
 }
 
+void rotateX(ofMatrix4x4 &transformMatrix, float delta)
+{
+    ofMatrix4x4 m;
+    m.makeRotationMatrix(delta, {1.0, 0.0, 0.0});
+    transformMatrix *= m;
+}
+
+void rotateY(ofMatrix4x4 &transformMatrix, float delta)
+{
+    ofMatrix4x4 m;
+    m.makeRotationMatrix(delta, {0.0, 1.0, 0.0});
+    transformMatrix *= m;
+}
+
+void rotateZ(ofMatrix4x4 &transformMatrix, float delta)
+{
+    ofMatrix4x4 m;
+    m.makeRotationMatrix(delta, {0.0, 0.0, 1.0});
+    transformMatrix *= m;
+}
+
+void scale(ofMatrix4x4 &transformMatrix, float delta)
+{
+    ofMatrix4x4 m;
+    m.makeScaleMatrix(delta, delta, delta);
+    transformMatrix *= m;
+}
+
 void runtimeError(std::string error)
 {
     printf("runtime error: %s\n", error.c_str());
@@ -223,6 +251,22 @@ void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
         else if (opcode == OpCode::translateZ) {
             float delta = readFloat(rules[ruleIndex], bytecodeIndex);
             translateZ(transformationMatrix, delta);
+        }
+        else if (opcode == OpCode::rotateX) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            rotateX(transformationMatrix, delta);
+        }
+        else if (opcode == OpCode::rotateY) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            rotateY(transformationMatrix, delta);
+        }
+        else if (opcode == OpCode::rotateZ) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            rotateZ(transformationMatrix, delta);
+        }
+        else if (opcode == OpCode::scale) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            scale(transformationMatrix, delta);
         }
         else if (opcode == OpCode::callRule) {
             uint8_t nextRuleIndex = readInt(rules[ruleIndex], bytecodeIndex);
