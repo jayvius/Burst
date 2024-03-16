@@ -6,7 +6,7 @@
 class ofApp : public ofBaseApp
 {
 public:
-	ofApp();
+	ofApp(bool drawAxis);
 	void setup();
 	void update();
 	void draw();
@@ -14,6 +14,7 @@ public:
     void mousePressed(int x, int y, int button);
 
 private:
+    bool drawAxis;
     ofEasyCam camera;
 	ofMaterial material;
 	ofLight light1;

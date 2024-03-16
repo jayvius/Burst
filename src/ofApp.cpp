@@ -6,8 +6,8 @@
 
 using std::thread;
 
-ofApp::ofApp()
-    : dampen(0.4)
+ofApp::ofApp(bool drawAxis)
+    : drawAxis(drawAxis), dampen(0.4)
 {
 
 }
@@ -63,7 +63,8 @@ void ofApp::draw()
 
 	ofMultMatrix(glm::mat4(modelRotation));
 
-    ofDrawAxis(100);
+    if (drawAxis)
+        ofDrawAxis(100);
     material.begin();
 
     {
