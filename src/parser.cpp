@@ -153,6 +153,8 @@ std::vector<Rule> parse(Scanner &scanner)
     while (std::optional<Token> t = scanner.next()) {
         if (!t || t->type == TokenType::End)
             break;
+        else if (t->type == TokenType::Endline)
+            continue;
         else if (t->type == TokenType::RuleName && scanner.peek() && scanner.peek()->type == TokenType::Colon)
             parseRuleDef(scanner, *t, rules);
         else if (t->type == TokenType::RuleName)

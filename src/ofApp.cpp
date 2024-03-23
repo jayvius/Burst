@@ -3,13 +3,15 @@
 #include "server.h"
 #include "burst.h"
 #include <thread>
+#include <fmt/core.h>
 
 using std::thread;
 
-ofApp::ofApp(bool drawAxis)
+ofApp::ofApp(std::string inputFileName, bool drawAxis)
     : drawAxis(drawAxis), dampen(0.4)
 {
-
+    ofBuffer buffer = ofBufferFromFile(ofToDataPath(inputFileName));
+    source = buffer.getText();
 }
 
 void ofApp::setup()
@@ -39,7 +41,7 @@ void ofApp::setup()
     camera.removeAllInteractions();
     camera.setFarClip(100000.0);
     
-    thread t(run, "R1: s 0.9 tx 5.0 rx 5.0 ry 10.0 box R1\nR1", std::ref(vboAppender), std::ref(updateMutex));
+    thread t(run, source, std::ref(vboAppender), std::ref(updateMutex));
     t.detach();
 }
 

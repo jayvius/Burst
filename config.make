@@ -77,7 +77,7 @@ OF_ROOT = /Users/jayvius/Projects/openFrameworks
 # add a runtime path to search for those shared libraries, since they aren't 
 # incorporated directly into the final executable application binary.
 # TODO: should this be a default setting?
-# PROJECT_LDFLAGS=-Wl,-rpath=./libs
+PROJECT_LDFLAGS=-L /opt/homebrew/Cellar/fmt/9.1.0/lib -lfmt
 
 ################################################################################
 # PROJECT DEFINES
@@ -105,7 +105,7 @@ OF_ROOT = /Users/jayvius/Projects/openFrameworks
 #
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
-# PROJECT_CFLAGS = 
+PROJECT_CFLAGS = -I /opt/homebrew/Cellar/fmt/9.1.0/include
 
 ################################################################################
 # PROJECT OPTIMIZATION CFLAGS

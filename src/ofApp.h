@@ -6,7 +6,7 @@
 class ofApp : public ofBaseApp
 {
 public:
-	ofApp(bool drawAxis);
+	ofApp(std::string inputFileName, bool drawAxis);
 	void setup();
 	void update();
 	void draw();
@@ -15,6 +15,8 @@ public:
 
 private:
     bool drawAxis;
+    std::string source;
+
     ofEasyCam camera;
 	ofMaterial material;
 	ofLight light1;
