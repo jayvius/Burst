@@ -2,18 +2,16 @@
 #define SCANNER_H
 
 #include <string>
-#include <vector>
 #include <optional>
 
 enum class TokenType {
     End = 0,
-    Comment,
     Endline,
     Colon,
-    RuleName,
     Integer,
     Float,
-    Command,
+    Symbol,
+    Invalid
 };
 
 struct Token
@@ -21,22 +19,34 @@ struct Token
     TokenType type;
     std::string lexeme;
     size_t line;
+    size_t col;
+    union {
+        uint32_t int_value;
+        float float_value;
+    } as;
 };
+
+std::string formatToken(Token &t);
 
 class Scanner
 {
 public:
     Scanner(std::string src);
-    std::optional<Token> next();
-    std::optional<Token> peek();
+    Token next();
+    Token peek();
     
 private:
-    void eval_token(std::string &src, std::optional<size_t> &token_start, size_t current, size_t line);
+    std::string getLexeme();
+    void skipWhitespace();
+    bool isWhitespace();
+    bool isEnd();
+    bool isEndline();
+    bool isColon();
+    bool isSymbol();
 
     std::string src;
-    std::vector<Token> tokens;
-    std::vector<Token>::const_iterator it;
+    size_t begin;
+    size_t current;
 };
-
 
 #endif
