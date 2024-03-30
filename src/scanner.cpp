@@ -58,7 +58,11 @@ Token Scanner::next()
         return {TokenType::End, "", 0, 0};
 
     if (isEndline()) {
-        current++;
+        // Skip blank lines
+        while (isEndline()) {
+            current++;
+            skipWhitespace();
+        }
         return {TokenType::Endline, "", 0, 0};
     }
     
@@ -77,7 +81,7 @@ Token Scanner::next()
     if (isSymbol())
         return {TokenType::Symbol, getLexeme(), 0, 0};
 
-    return {TokenType::Invalid, "", 0, 0};
+    return {TokenType::Invalid, getLexeme(), 0, 0};
 }
 
 std::string Scanner::getLexeme()
@@ -98,14 +102,14 @@ void Scanner::skipWhitespace()
     }
 }
 
-bool Scanner::isEnd()
-{
-    return current >= src.size();
-}
-
 bool Scanner::isWhitespace()
 {
     return src[current] == ' ' || src[current] == '\t';
+}
+
+bool Scanner::isEnd()
+{
+    return current >= src.size();
 }
 
 bool Scanner::isEndline()
@@ -153,13 +157,15 @@ std::string formatToken(Token &t)
         return fmt::format("type={} lexeme={}", "Integer", t.lexeme);
     if (t.type == TokenType::Float)
         return fmt::format("type={} lexeme={}", "Float", t.lexeme);
+    if (t.type == TokenType::Invalid)
+        return fmt::format("type={} lexeme={}", "Invalid", t.lexeme);
     int token_value = static_cast<std::underlying_type<TokenType>::type>(t.type);
     return fmt::format("invalid token type {}", token_value);
 }
 
 int main(int argc, char *argv[])
 {
-    Scanner s("R1 1:1.0\nR1:");
+    Scanner s("R1 1:1.0\n  \n \nR1:");
     
     while (true) {
         Token t = s.next();
