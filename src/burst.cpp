@@ -1,302 +1,281 @@
-#include "burst.h"
-#include "ofGraphics.h"
-#include "ofMatrix4x4.h"
-#include "of3dPrimitives.h"
-#include "scanner.h"
-#include "parser.h"
-#include "opcodes.h"
+#include <cstdio>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <cmath>
 
-/*
-Burst::Burst(ofxVboAppender &vboAppender, std::mutex &updateMutex)
-    : vboAppender(vboAppender), updateMutex(updateMutex)
+#include "GL/gl3w.h"
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <fmt/core.h>
+
+#include "types.hpp"
+#include "cube.hpp"
+#include "buffer.hpp"
+
+std::string load_shader_src(const std::string &shader_filename)
 {
-
+    std::ifstream input(shader_filename);
+    std::stringstream buffer;
+    buffer << input.rdbuf();
+    auto src = buffer.str();
+    input.close();
+    return src;
 }
 
-void Burst::load(std::string src)
+GLuint create_shader(GLenum shader_type, const std::string &shader_src)
 {
-    Scanner scanner(src);
-    //while (std::optional<Token> t = scanner.next()) {
-    //    printf("%u %s\n", t->type, t->lexeme.c_str());
-    //}
-    rules = parse(scanner);
-    // R0 maxdepth 50 : R1 ty 20.0 R0
-    //rules.ruleTable.push_back({"R0", {5, 1, 2, 0, 0, 160, 65, 5, 0}, 1, 50});
-    // R1 maxdepth 50 : R2 tz 20.0 R1
-    //rules.ruleTable.push_back({"R1", {5, 2, 3, 0, 0, 160, 65, 5, 1}, 0, 50});
-    // R2 maxdepth 50 : box tx 20.0 R2
-    //rules.ruleTable.push_back({"R2", {4, 1, 0, 0, 160, 65, 5, 2}, 0, 50});
-}
-
-void Burst::run()
-{
-    size_t rule = 0;
-    size_t ruleIndex = 0;
-    //while (rules.ruleTable[rule].currentDepth < rules.ruleTable[rule].maxDepth) {
-    while (ruleStack.size() > 0 || ruleIndex < rules[rule].bytecode.size()) {
-        //printf("%u %u %u %u %u\n", rules.ruleTable[rule].currentDepth, rules.ruleTable[rule].maxDepth, rule, ruleIndex, rules.ruleTable[rule].bytecode[ruleIndex]);
-        if (ruleIndex >= rules[rule].bytecode.size()) {
-            rules[rule].currentDepth--;
-            rule = ruleStack.back();
-            ruleStack.pop_back();
-            ruleIndex = ruleIndexStack.back();
-            ruleIndexStack.pop_back();
-            this->transformationMatrix = this->transformationStack.back();
-            this->transformationStack.pop_back();
-            //printf("JNB: %u %u\n", rule, ruleIndex);
-            continue;
-        }
-        if (rules[rule].bytecode[ruleIndex] == 1) {
-            ruleIndex++;
-            float delta;
-            memcpy(&delta, rules[rule].bytecode.data() + ruleIndex, 4);
-            ruleIndex += 4;
-            //printf("tx %f\n", delta);
-            this->translateX(delta);
-        }
-        else if (rules[rule].bytecode[ruleIndex] == 2) {
-            ruleIndex++;
-            float delta;
-            memcpy(&delta, rules[rule].bytecode.data() + ruleIndex, 4);
-            ruleIndex += 4;
-            //printf("ty %f\n", delta);
-            this->translateY(delta);
-        }
-        else if (rules[rule].bytecode[ruleIndex] == 3) {
-            ruleIndex++;
-            float delta;
-            memcpy(&delta, rules[rule].bytecode.data() + ruleIndex, 4);
-            ruleIndex += 4;
-            //printf("tz %f\n", delta);
-            this->translateZ(delta);
-        }
-        else if (rules[rule].bytecode[ruleIndex] == 4) {
-            ruleIndex++;
-            //printf("box\n");
-            this->drawBox();
-        }
-        else if (rules[rule].bytecode[ruleIndex] == 5) {
-            ruleIndex++;
-            size_t nextRule = rules[rule].bytecode[ruleIndex++];
-            if (rules[nextRule].currentDepth < rules[nextRule].maxDepth) {
-                ruleStack.push_back(rule);
-                ruleIndexStack.push_back(ruleIndex);
-                rule = nextRule;
-                rules[rule].currentDepth++;
-                ruleIndex = 0;
-                this->transformationStack.push_back(this->transformationMatrix);
-                //printf("rule %u\n", rule);
-            }
-        }
-        else if (rules[rule].bytecode[ruleIndex] == static_cast<uint8_t>(OpCode::exit)) {
-            return;
-        }
-        else {
-            uint8_t temp = rules[rule].bytecode[ruleIndex];
-            fprintf(stderr, "ERROR: invalid command: %u\n", temp);
-            exit(1);
-        }
+    if (shader_type != GL_VERTEX_SHADER && shader_type != GL_FRAGMENT_SHADER) {
+        fprintf(stderr, "ERROR: unknown shader type %d\n", shader_type);
+        exit(1);
     }
-}
 
-void Burst::translateX(float delta)
-{
-    ofMatrix4x4 m;
-    m.makeTranslationMatrix(delta, 0.0, 0.0);
-    this->transformationMatrix *= m;
-}
+    const char *shader_code = shader_src.c_str();
+    const GLint size = shader_src.size();
 
-void Burst::translateY(float delta)
-{
-    ofMatrix4x4 m;
-    m.makeTranslationMatrix(0.0, delta, 0.0);
-    this->transformationMatrix *= m;
-}
+    GLuint shader = glCreateShader(shader_type);
+    glShaderSource(shader, 1, const_cast<const char**>(&shader_code), &size);
+    glCompileShader(shader);
 
-void Burst::translateZ(float delta)
-{
-    ofMatrix4x4 m;
-    m.makeTranslationMatrix(0.0, 0.0, delta);
-    this->transformationMatrix *= m;
-}
+    GLint status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if (status == GL_FALSE) {
+        GLint info_log_length;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_log_length);
 
-void Burst::drawBox()
-{
-    std::lock_guard<std::mutex> guard(this->updateMutex);
-    vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, this->transformationMatrix);
-}
-*/
+        std::string info_log;
+        info_log.reserve(info_log_length);
+        glGetShaderInfoLog(shader, info_log_length, NULL, info_log.data());
 
-OpCode readOpCode(Rule &rule, size_t &bytecodeIndex)
-{
-    return OpCode(rule.bytecode[bytecodeIndex++]);
-}
-
-float readFloat(Rule &rule, size_t &bytecodeIndex)
-{
-    float temp;
-    memcpy(&temp, &rule.bytecode[bytecodeIndex], sizeof(float));
-    bytecodeIndex += sizeof(float);
-    return temp;
-}
-
-uint8_t readInt(Rule &rule, size_t &bytecodeIndex)
-{
-    uint8_t temp;
-    memcpy(&temp, &rule.bytecode[bytecodeIndex], sizeof(uint8_t));
-    bytecodeIndex += sizeof(uint8_t);
-    return temp;
-}
-
-void drawBox(ofMatrix4x4 &transformMatrix, ofxVboAppender &vboAppender, std::mutex &updateMutex)
-{
-    std::lock_guard<std::mutex> guard(updateMutex);
-    vboAppender.append(ofBoxPrimitive(10, 10, 10, 1, 1, 1).getMesh(), {1, 1, 1, 1}, transformMatrix);
-}
-
-void translateX(ofMatrix4x4 &transformMatrix, float delta)
-{
-    ofMatrix4x4 m;
-    m.makeTranslationMatrix(delta, 0.0, 0.0);
-    transformMatrix *= m;
-}
-
-void translateY(ofMatrix4x4 &transformMatrix, float delta)
-{
-    ofMatrix4x4 m;
-    m.makeTranslationMatrix(0.0, delta, 0.0);
-    transformMatrix *= m;
-}
-
-void translateZ(ofMatrix4x4 &transformMatrix, float delta)
-{
-    ofMatrix4x4 m;
-    m.makeTranslationMatrix(0.0, 0.0, delta);
-    transformMatrix *= m;
-}
-
-void rotateX(ofMatrix4x4 &transformMatrix, float delta)
-{
-    ofMatrix4x4 m;
-    m.makeRotationMatrix(delta, {1.0, 0.0, 0.0});
-    transformMatrix *= m;
-}
-
-void rotateY(ofMatrix4x4 &transformMatrix, float delta)
-{
-    ofMatrix4x4 m;
-    m.makeRotationMatrix(delta, {0.0, 1.0, 0.0});
-    transformMatrix *= m;
-}
-
-void rotateZ(ofMatrix4x4 &transformMatrix, float delta)
-{
-    ofMatrix4x4 m;
-    m.makeRotationMatrix(delta, {0.0, 0.0, 1.0});
-    transformMatrix *= m;
-}
-
-void scale(ofMatrix4x4 &transformMatrix, float delta)
-{
-    ofMatrix4x4 m;
-    m.makeScaleMatrix(delta, delta, delta);
-    transformMatrix *= m;
-}
-
-void runtimeError(std::string error)
-{
-    printf("runtime error: %s\n", error.c_str());
-    exit(1);
-}
-
-void run(std::string src, ofxVboAppender &vboAppender, std::mutex &updateMutex)
-{
-    Scanner scanner(src);
-    std::vector<Rule> rules = parse(scanner);
-
-    std::vector<ofMatrix4x4> transformationStack;
-    std::vector<size_t> ruleIndexStack;
-    std::vector<size_t> bytecodeIndexStack;
-
-    size_t ruleIndex = 0;
-    size_t bytecodeIndex = 0;
-    ofMatrix4x4 transformationMatrix;
-
-    while (true) {
-        if (bytecodeIndex >= rules[ruleIndex].bytecode.size()) {
-            if (ruleIndexStack.empty() || bytecodeIndexStack.empty())
+        switch (shader_type) {
+            case GL_VERTEX_SHADER:
+                fprintf(stderr, "vertex shader %s\n", info_log.c_str());
                 break;
-            
-            rules[ruleIndex].currentDepth--;
-            ruleIndex = ruleIndexStack.back();
-            ruleIndexStack.pop_back();
-            bytecodeIndex = bytecodeIndexStack.back();
-            bytecodeIndexStack.pop_back();
-            transformationMatrix = transformationStack.back();
-            transformationStack.pop_back();
+            case GL_FRAGMENT_SHADER:
+                fprintf(stderr, "fragment shader %s\n", info_log.c_str());
+                break;
+            default:
+                fprintf(stderr, "unknown shader %s\n", info_log.c_str());
+                break;
         }
-
-        OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
-        if (opcode == OpCode::drawBox) {
-            drawBox(transformationMatrix, vboAppender, updateMutex);
-        }
-        else if (opcode == OpCode::translateX) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            translateX(transformationMatrix, delta);
-        }
-        else if (opcode == OpCode::translateY) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            translateY(transformationMatrix, delta);
-        }
-        else if (opcode == OpCode::translateZ) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            translateZ(transformationMatrix, delta);
-        }
-        else if (opcode == OpCode::rotateX) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            rotateX(transformationMatrix, delta);
-        }
-        else if (opcode == OpCode::rotateY) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            rotateY(transformationMatrix, delta);
-        }
-        else if (opcode == OpCode::rotateZ) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            rotateZ(transformationMatrix, delta);
-        }
-        else if (opcode == OpCode::scale) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            scale(transformationMatrix, delta);
-        }
-        else if (opcode == OpCode::callRule) {
-            uint8_t nextRuleIndex = readInt(rules[ruleIndex], bytecodeIndex);
-            if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
-                continue;
-            rules[nextRuleIndex].currentDepth++;
-            ruleIndexStack.push_back(ruleIndex);
-            ruleIndex = nextRuleIndex;
-            bytecodeIndexStack.push_back(bytecodeIndex);
-            bytecodeIndex = 0;
-            transformationStack.push_back(transformationMatrix);
-        }
-        else if (opcode == OpCode::exit) {
-            continue;
-        }
-        else {
-            runtimeError("invalid opcode");
-        }
+        exit(1);
     }
 
-    /*
-    while (bytecodeIndex < rules[ruleIndex].bytecode.size()) {
-        OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
-        if (opcode == OpCode::drawBox) {
-            drawBox(transformationMatrix, vboAppender, updateMutex);
-        }
-        else if (opcode == OpCode::translateX) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            translateX(transformationMatrix, delta);
-        }
+    return shader;
+}
+
+GLuint create_program(std::string vertex_shader_src,
+                      std::string fragment_shader_src,
+                      std::vector<std::string> feedback_outputs)
+{
+    std::vector<GLuint> shaders;
+    GLuint program = glCreateProgram();
+
+    GLuint vertex_shader = create_shader(GL_VERTEX_SHADER, vertex_shader_src);
+    glAttachShader(program, vertex_shader);
+
+    GLuint fragment_shader;
+    if (!fragment_shader_src.empty()) {
+        fragment_shader = create_shader(GL_FRAGMENT_SHADER, fragment_shader_src);
+        glAttachShader(program, fragment_shader);
     }
-    */
+
+    if (!feedback_outputs.empty()) {
+        std::vector<const char*> outputs;
+        for (auto &s: feedback_outputs) {
+            outputs.push_back(s.c_str());
+        }
+        glTransformFeedbackVaryings(program,
+                                    feedback_outputs.size(),
+                                    outputs.data(),
+                                    GL_INTERLEAVED_ATTRIBS);
+    }
+
+    glLinkProgram(program);
+
+    glDetachShader(program, vertex_shader);
+    if (!fragment_shader_src.empty()) {
+        glDetachShader(program, fragment_shader);
+    }
+
+    glUseProgram(program);
+    return program;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+}
+
+GLFWwindow* create_window(int width, int height, const char *title)
+{
+    glfwInit();
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    GLFWwindow *window = glfwCreateWindow(width, height, title, NULL, NULL);
+    glfwMakeContextCurrent(window);
+    glfwSetKeyCallback(window, key_callback);
+
+    return window;
+}
+
+void init_gl()
+{
+    gl3wInit();
+
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+struct Trackball
+{
+    float yOffset;
+    glm::vec2 lastMousePosition;
+    bool mouseDrag;
+    double xSpeed;
+    double ySpeed;
+    float dampen;
+    glm::quat modelRotation;
+};
+
+void initTrackball(Trackball &trackball)
+{
+    trackball.yOffset = 20.0f;
+    trackball.mouseDrag = false;
+    trackball.xSpeed = 0.0;
+    trackball.ySpeed = 0.0;
+    trackball.dampen = 0.4;
+    trackball.modelRotation = glm::quat(1.0, 0.0, 0.0, 0.0);
+}
+
+void trackballDollyCallback(GLFWwindow* window, double xOffset, double yOffset)
+{
+    Trackball *trackball = static_cast<Trackball*>(glfwGetWindowUserPointer(window));
+    trackball->yOffset += 0.1 * yOffset;
+    if (trackball->yOffset < 0.1)
+        trackball->yOffset = 0.1;
+}
+
+void updateTrackball(Trackball &trackball)
+{
+    trackball.xSpeed /= 1.01f;
+    trackball.ySpeed /= 1.01f;
+    glm::quat yRot = glm::angleAxis(static_cast<float>(glm::radians(trackball.xSpeed)), glm::vec3(0,1,0));
+    glm::quat xRot = glm::angleAxis(static_cast<float>(glm::radians(trackball.ySpeed)), glm::vec3(1,0,0));
+    trackball.modelRotation = yRot * xRot * trackball.modelRotation;
+}
+
+void updateModelFromTrackball(Trackball &trackball, glm::mat4 &model)
+{
+    model = glm::mat4(trackball.modelRotation);
+}
+
+void updateViewFromTrackball(Trackball &trackball, glm::mat4 &view)
+{
+    view = glm::lookAt(
+        glm::vec3(0.0, 0.0, trackball.yOffset),
+        glm::vec3(0.0, 0.0, 0.0),
+        glm::vec3(0.0, 1.0, 0.0));
+}
+
+void trackballToggleCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    Trackball *trackball = static_cast<Trackball*>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        trackball->mouseDrag = true;
+        double xPos, yPos;
+        glfwGetCursorPos(window, &xPos, &yPos);
+        trackball->lastMousePosition = glm::vec2(xPos, yPos);
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        trackball->mouseDrag = false;
+    }
+}
+
+static void trackballDragCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    Trackball *trackball = static_cast<Trackball*>(glfwGetWindowUserPointer(window));
+    if (trackball->mouseDrag) {
+        double xPos, yPos;
+        glfwGetCursorPos(window, &xPos, &yPos);
+        trackball->xSpeed = std::lerp(trackball->xSpeed, (xPos - trackball->lastMousePosition.x) * trackball->dampen, 0.1);
+        trackball->ySpeed = std::lerp(trackball->ySpeed, (yPos - trackball->lastMousePosition.y) * trackball->dampen, 0.1);
+        trackball->lastMousePosition = glm::vec2(xPos, yPos);
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    GLFWwindow* window = create_window(800, 800, "Burst");
+    init_gl();
+
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetScrollCallback(window, trackballDollyCallback);
+    glfwSetMouseButtonCallback(window, trackballToggleCallback);
+    glfwSetCursorPosCallback(window, trackballDragCallback);
+
+    fmt::print("renderer: {}\n", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    fmt::print("opengl version: {}\n", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+
+    GLuint program = create_program(load_shader_src("src/triangle.vs"), load_shader_src("src/triangle.fs"), {});
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    Buffer buffer;
+    init(buffer);
+    // VertexIndex v1 = addVertex(buffer, {{0.5, 0.0, 0.0}, {255, 255, 255, 255}});
+    // VertexIndex v2 = addVertex(buffer, {{0.0, 0.5, 0.0}, {255, 255, 255, 255}});
+    // VertexIndex v3 = addVertex(buffer, {{-0.5, 0.0, 0.0}, {255, 255, 255, 255}});
+    // addTriangle(buffer, v1, v2, v3);
+    addCube(buffer, glm::mat4(1.0f));
+
+    glm::mat4 model = glm::mat4(1.0);
+    glm::mat4 view = glm::mat4(1.0);
+
+    Trackball trackball;
+    initTrackball(trackball);
+    glfwSetWindowUserPointer(window, &trackball);
+
+    while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        updateTrackball(trackball);
+
+        updateModelFromTrackball(trackball, model);
+        unsigned int model_id = glGetUniformLocation(program, "model");
+        glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
+
+        updateViewFromTrackball(trackball, view);
+        unsigned int view_id = glGetUniformLocation(program, "view");
+        glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
+
+        int screenWidth, screenHeight;
+        glfwGetWindowSize(window, &screenWidth, &screenHeight);
+        double ratio = static_cast<double>(screenWidth) / static_cast<double>(screenHeight);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0), ratio, 0.1, 1000.0);
+        unsigned int projection_id = glGetUniformLocation(program, "projection");
+        glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
+
+        draw(buffer);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    
+    glfwTerminate();
+    return 0;
 }
