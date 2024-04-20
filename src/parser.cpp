@@ -31,145 +31,158 @@ void parseError(Token &t, std::string error)
 
 void parseCommand(Scanner &scanner, Token &t, Rule &rule)
 {
-    if (t.lexeme == "box")
-        writeOpCode(rule, OpCode::drawBox);
-    else if (t.lexeme == "tx") {
-        writeOpCode(rule, OpCode::translateX);
-        std::optional<Token> t2 = scanner.next();
-        if (!t2 || t2->type != TokenType::Float)
-            parseError(t, "expected float argument for 'tx' command ");
-        float arg = stof(t2->lexeme);
-        writeFloat(rule, arg);
-    }
-    else if (t.lexeme == "ty") {
-        writeOpCode(rule, OpCode::translateY);
-        std::optional<Token> t2 = scanner.next();
-        if (!t2 || t2->type != TokenType::Float)
-            parseError(t, "expected float argument for 'ty' command ");
-        float arg = stof(t2->lexeme);
-        writeFloat(rule, arg);
-    }
-    else if (t.lexeme == "tz") {
-        writeOpCode(rule, OpCode::translateZ);
-        std::optional<Token> t2 = scanner.next();
-        if (!t2 || t2->type != TokenType::Float)
-            parseError(t, "expected float argument for 'tz' command ");
-        float arg = stof(t2->lexeme);
-        writeFloat(rule, arg);
-    }
-    else if (t.lexeme == "rx") {
-        writeOpCode(rule, OpCode::rotateX);
-        std::optional<Token> t2 = scanner.next();
-        if (!t2 || t2->type != TokenType::Float)
-            parseError(t, "expected float argument for 'rx' command ");
-        float arg = stof(t2->lexeme);
-        writeFloat(rule, arg);
-    }
-    else if (t.lexeme == "ry") {
-        writeOpCode(rule, OpCode::rotateY);
-        std::optional<Token> t2 = scanner.next();
-        if (!t2 || t2->type != TokenType::Float)
-            parseError(t, "expected float argument for 'ry' command ");
-        float arg = stof(t2->lexeme);
-        writeFloat(rule, arg);
-    }
-    else if (t.lexeme == "rz") {
-        writeOpCode(rule, OpCode::rotateY);
-        std::optional<Token> t2 = scanner.next();
-        if (!t2 || t2->type != TokenType::Float)
-            parseError(t, "expected float argument for 'rz' command ");
-        float arg = stof(t2->lexeme);
-        writeFloat(rule, arg);
-    }
-    else if (t.lexeme == "s") {
-        writeOpCode(rule, OpCode::scale);
-        std::optional<Token> t2 = scanner.next();
-        if (!t2 || t2->type != TokenType::Float)
-            parseError(t, "expected float argument for 's' command ");
-        float arg = stof(t2->lexeme);
-        writeFloat(rule, arg);
-    }
-    else
-        parseError(t, "invalid command " + t.lexeme);
+    // if (t.lexeme == "box")
+    //     writeOpCode(rule, OpCode::drawBox);
+    // else if (t.lexeme == "tx") {
+    //     writeOpCode(rule, OpCode::translateX);
+    //     std::optional<Token> t2 = scanner.next();
+    //     if (!t2 || t2->type != TokenType::Float)
+    //         parseError(t, "expected float argument for 'tx' command ");
+    //     float arg = stof(t2->lexeme);
+    //     writeFloat(rule, arg);
+    // }
+    // else if (t.lexeme == "ty") {
+    //     writeOpCode(rule, OpCode::translateY);
+    //     std::optional<Token> t2 = scanner.next();
+    //     if (!t2 || t2->type != TokenType::Float)
+    //         parseError(t, "expected float argument for 'ty' command ");
+    //     float arg = stof(t2->lexeme);
+    //     writeFloat(rule, arg);
+    // }
+    // else if (t.lexeme == "tz") {
+    //     writeOpCode(rule, OpCode::translateZ);
+    //     std::optional<Token> t2 = scanner.next();
+    //     if (!t2 || t2->type != TokenType::Float)
+    //         parseError(t, "expected float argument for 'tz' command ");
+    //     float arg = stof(t2->lexeme);
+    //     writeFloat(rule, arg);
+    // }
+    // else if (t.lexeme == "rx") {
+    //     writeOpCode(rule, OpCode::rotateX);
+    //     std::optional<Token> t2 = scanner.next();
+    //     if (!t2 || t2->type != TokenType::Float)
+    //         parseError(t, "expected float argument for 'rx' command ");
+    //     float arg = stof(t2->lexeme);
+    //     writeFloat(rule, arg);
+    // }
+    // else if (t.lexeme == "ry") {
+    //     writeOpCode(rule, OpCode::rotateY);
+    //     std::optional<Token> t2 = scanner.next();
+    //     if (!t2 || t2->type != TokenType::Float)
+    //         parseError(t, "expected float argument for 'ry' command ");
+    //     float arg = stof(t2->lexeme);
+    //     writeFloat(rule, arg);
+    // }
+    // else if (t.lexeme == "rz") {
+    //     writeOpCode(rule, OpCode::rotateY);
+    //     std::optional<Token> t2 = scanner.next();
+    //     if (!t2 || t2->type != TokenType::Float)
+    //         parseError(t, "expected float argument for 'rz' command ");
+    //     float arg = stof(t2->lexeme);
+    //     writeFloat(rule, arg);
+    // }
+    // else if (t.lexeme == "s") {
+    //     writeOpCode(rule, OpCode::scale);
+    //     std::optional<Token> t2 = scanner.next();
+    //     if (!t2 || t2->type != TokenType::Float)
+    //         parseError(t, "expected float argument for 's' command ");
+    //     float arg = stof(t2->lexeme);
+    //     writeFloat(rule, arg);
+    // }
+    // else
+    //     parseError(t, "invalid command " + t.lexeme);
 }
 
 void parseRuleCall(Scanner &scanner, Token &t, std::vector<Rule> &rules, size_t ruleIndex)
 {
-    size_t nextRuleIndex = 0;
-    for (auto i = 0; i < rules.size(); i++) {
-        if (rules[i].name == t.lexeme) {
-            nextRuleIndex = i;
-            break;
-        }
-    }
-    if (nextRuleIndex == 0) {
-        rules.push_back({t.lexeme, {}, 0, 50});
-        nextRuleIndex = rules.size() - 1;
-    }
-    writeOpCode(rules[ruleIndex], OpCode::callRule);
-    writeInt(rules[ruleIndex], static_cast<uint8_t>(nextRuleIndex));
+    // size_t nextRuleIndex = 0;
+    // for (auto i = 0; i < rules.size(); i++) {
+    //     if (rules[i].name == t.lexeme) {
+    //         nextRuleIndex = i;
+    //         break;
+    //     }
+    // }
+    // if (nextRuleIndex == 0) {
+    //     rules.push_back({t.lexeme, {}, 0, 50});
+    //     nextRuleIndex = rules.size() - 1;
+    // }
+    // writeOpCode(rules[ruleIndex], OpCode::callRule);
+    // writeInt(rules[ruleIndex], static_cast<uint8_t>(nextRuleIndex));
 }
 
 void parseRuleDef(Scanner &scanner, Token &t, std::vector<Rule> &rules)
 {
-    size_t ruleIndex = 0;
-    for (auto i = 0; i < rules.size(); i++) {
-        if (rules[i].name == t.lexeme) {
-            ruleIndex = i;
-            break;
-        }
-    }
-    if (ruleIndex == 0 && rules.size() == 256)
-        parseError(t, "could not add rule " + t.lexeme + "; maximum number of rules reached");
-    if (ruleIndex == 0) {
-        rules.push_back({t.lexeme, {}, 0, 50});
-        ruleIndex = rules.size() - 1;
-    }
-    // Consume colon
-    scanner.next();
-    while (std::optional<Token> t = scanner.next()) {
-        if (!t || t->type == TokenType::End)
-            break;
-        else if (t->type == TokenType::Endline)
-            break;
-        else if (t->type == TokenType::Command)
-            parseCommand(scanner, *t, rules[ruleIndex]);
-        else if (t->type == TokenType::RuleName)
-            parseRuleCall(scanner, *t, rules, ruleIndex);
-        else
-            parseError(*t, "invalid token " + t->lexeme);
-    }
+    // size_t ruleIndex = 0;
+    // for (auto i = 0; i < rules.size(); i++) {
+    //     if (rules[i].name == t.lexeme) {
+    //         ruleIndex = i;
+    //         break;
+    //     }
+    // }
+    // if (ruleIndex == 0 && rules.size() == 256)
+    //     parseError(t, "could not add rule " + t.lexeme + "; maximum number of rules reached");
+    // if (ruleIndex == 0) {
+    //     rules.push_back({t.lexeme, {}, 0, 50});
+    //     ruleIndex = rules.size() - 1;
+    // }
+    // // Consume colon
+    // scanner.next();
+    // while (std::optional<Token> t = scanner.next()) {
+    //     if (!t || t->type == TokenType::End)
+    //         break;
+    //     else if (t->type == TokenType::Endline)
+    //         break;
+    //     else if (t->type == TokenType::Command)
+    //         parseCommand(scanner, *t, rules[ruleIndex]);
+    //     else if (t->type == TokenType::RuleName)
+    //         parseRuleCall(scanner, *t, rules, ruleIndex);
+    //     else
+    //         parseError(*t, "invalid token " + t->lexeme);
+    // }
 
-    writeOpCode(rules[ruleIndex], OpCode::exit);
-    return;
+    // writeOpCode(rules[ruleIndex], OpCode::exit);
+    // return;
 }
 
 std::vector<Rule> parse(Scanner &scanner)
 {
     std::vector<Rule> rules;
     rules.push_back({"", {}, 0, 0});
-    size_t ruleIndex = 0;
+    size_t startRuleIndex = 0;
 
-    while (std::optional<Token> t = scanner.next()) {
-        if (!t || t->type == TokenType::End)
+    Token t = scanner.next();
+    if (t.type == TokenType::End)
+        parseError();
+
+    while (true) {
+        Token t = scanner.peek();
+        if (t.type == TokenType::End)
             break;
-        else if (t->type == TokenType::Endline)
-            continue;
-        else if (t->type == TokenType::RuleName && scanner.peek() && scanner.peek()->type == TokenType::Colon)
-            parseRuleDef(scanner, *t, rules);
-        else if (t->type == TokenType::RuleName)
-            parseRuleCall(scanner, *t, rules, ruleIndex);
-        else
-            parseError(*t, "invalid token " + t->lexeme + "; expected rule definition");
+        
+        if (t.type != TokenType::Symbol)
+
     }
 
-    for (auto &r: rules) {
-        if (r.bytecode.empty()) {
-            printf("parse error: no definition for rule %s\n", r.name.c_str());
-            exit(1);
-        }
-    }
+    // while (std::optional<Token> t = scanner.next()) {
+    //     if (!t || t->type == TokenType::End)
+    //         break;
+    //     else if (t->type == TokenType::Endline)
+    //         continue;
+    //     else if (t->type == TokenType::RuleName && scanner.peek() && scanner.peek()->type == TokenType::Colon)
+    //         parseRuleDef(scanner, *t, rules);
+    //     else if (t->type == TokenType::RuleName)
+    //         parseRuleCall(scanner, *t, rules, ruleIndex);
+    //     else
+    //         parseError(*t, "invalid token " + t->lexeme + "; expected rule definition");
+    // }
 
-    writeOpCode(rules[0], OpCode::exit);
+    // for (auto &r: rules) {
+    //     if (r.bytecode.empty()) {
+    //         printf("parse error: no definition for rule %s\n", r.name.c_str());
+    //         exit(1);
+    //     }
+    // }
+
+    writeOpCode(rules[startRuleIndex], OpCode::exit);
     return rules;
 }

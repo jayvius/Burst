@@ -31,6 +31,6 @@ int main(int argc, char *argv[])
 		argIndex++;
 	}
 
-	ofSetupOpenGL(1024,768, OF_FULLSCREEN);
+	ofSetupOpenGL(1024,768, OF_WINDOW);
 	ofRunApp(new ofApp(inputFileName, drawAxis));
 }
