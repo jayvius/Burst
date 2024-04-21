@@ -8,7 +8,7 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/Burst_debug.app/Contents/MacOS/Burst_debug",
+            "program": "${workspaceFolder}/burst",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
