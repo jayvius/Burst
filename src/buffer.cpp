@@ -20,7 +20,12 @@ void init(Buffer &buffer)
         sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(positionAttribute);
 
-    GLuint colorAttribute = 1;
+    GLuint normalAttribute = 1;
+    glVertexAttribPointer(normalAttribute, 3, GL_FLOAT, GL_FALSE,
+        sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(normalAttribute);
+
+    GLuint colorAttribute = 2;
     glVertexAttribPointer(colorAttribute, 4, GL_UNSIGNED_BYTE, GL_FALSE,
         sizeof(Vertex), (void*)offsetof(Vertex, color));
     glEnableVertexAttribArray(colorAttribute);
