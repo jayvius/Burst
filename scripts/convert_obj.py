@@ -62,23 +62,50 @@ def read_obj(filename):
 
 
 def print_cpp(mesh: Mesh):
+    # Print vertices array
+    data = '    '
+    count = 0
+    for v in mesh.vertices:
+        data += f'{v.x}, {v.y}, {v.z},'
+        count += 1
+        if count == 3:
+            data += '\n    '
+            count = 0
+        else:
+            data += ' '
+    print(f'static const float vertices[] = {{\n{data}\n}};')
+
+    print()
+
+    # Print normals array
+    data = '    '
+    count = 0
+    for n in mesh.normals:
+        data += f'{n.x}, {n.y}, {n.z},'
+        count += 1
+        if count == 3:
+            data += '\n    '
+            count = 0
+        else:
+            data += ' '
+    print(f'static const float normals[] = {{\n{data}\n}};')
+    
+    print()
+
+    # Print triangles array
+    data = '    '
+    count = 0
     for t in mesh.triangles:
-        v = mesh.vertices[t.v1.v_index-1]
-        n = mesh.normals[t.v1.n_index-1]
-        v_str = f'{{{v.x}, {v.y}, {v.z}}},'
-        n_str = f'{{{n.x}, {n.y}, {n.z}}},'
-        print(f'v0 = addVertex(buffer, {{{v_str} {n_str} {{r, g, b, a}}}});')
-        v = mesh.vertices[t.v2.v_index-1]
-        n = mesh.normals[t.v2.n_index-1]
-        v_str = f'{{{v.x}, {v.y}, {v.z}}},'
-        n_str = f'{{{n.x}, {n.y}, {n.z}}},'
-        print(f'v1 = addVertex(buffer, {{{v_str} {n_str} {{r, g, b, a}}}});')
-        v = mesh.vertices[t.v3.v_index-1]
-        n = mesh.normals[t.v3.n_index-1]
-        v_str = f'{{{v.x}, {v.y}, {v.z}}},'
-        n_str = f'{{{n.x}, {n.y}, {n.z}}},'
-        print(f'v2 = addVertex(buffer, {{{v_str} {n_str} {{r, g, b, a}}}});')
-        print('addTriangle(buffer, v0, v1, v2);')
+        data += f'{t.v1.v_index-1}, {t.v1.n_index-1}, '
+        data += f'{t.v2.v_index-1}, {t.v2.n_index-1}, '
+        data += f'{t.v3.v_index-1}, {t.v3.n_index-1},'
+        count += 1
+        if count == 3:
+            data += '\n    '
+            count = 0
+        else:
+            data += ' '
+    print(f'static const uint16_t triangles[] = {{\n{data}\n}};')
 
 
 if __name__ == '__main__':
