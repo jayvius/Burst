@@ -29,7 +29,9 @@ std::string load_shader_src(const std::string &shader_filename)
 
 GLuint create_shader(GLenum shader_type, const std::string &shader_src)
 {
-    if (shader_type != GL_VERTEX_SHADER && shader_type != GL_FRAGMENT_SHADER) {
+    if (shader_type != GL_VERTEX_SHADER
+            && shader_type != GL_FRAGMENT_SHADER
+            && shader_type != GL_GEOMETRY_SHADER) {
         fprintf(stderr, "ERROR: unknown shader type %d\n", shader_type);
         exit(1);
     }
@@ -58,6 +60,9 @@ GLuint create_shader(GLenum shader_type, const std::string &shader_src)
             case GL_FRAGMENT_SHADER:
                 fprintf(stderr, "fragment shader %s\n", info_log.c_str());
                 break;
+            case GL_GEOMETRY_SHADER:
+                fprintf(stderr, "geometry shader %s\n", info_log.c_str());
+                break;
             default:
                 fprintf(stderr, "unknown shader %s\n", info_log.c_str());
                 break;
@@ -70,6 +75,7 @@ GLuint create_shader(GLenum shader_type, const std::string &shader_src)
 
 GLuint create_program(std::string vertex_shader_src,
                       std::string fragment_shader_src,
+                      std::string geometry_shader_src,
                       std::vector<std::string> feedback_outputs)
 {
     std::vector<GLuint> shaders;
@@ -82,6 +88,12 @@ GLuint create_program(std::string vertex_shader_src,
     if (!fragment_shader_src.empty()) {
         fragment_shader = create_shader(GL_FRAGMENT_SHADER, fragment_shader_src);
         glAttachShader(program, fragment_shader);
+    }
+
+    GLuint geometry_shader;
+    if (!geometry_shader_src.empty()) {
+        geometry_shader = create_shader(GL_GEOMETRY_SHADER, geometry_shader_src);
+        glAttachShader(program, geometry_shader);
     }
 
     if (!feedback_outputs.empty()) {
@@ -100,6 +112,9 @@ GLuint create_program(std::string vertex_shader_src,
     glDetachShader(program, vertex_shader);
     if (!fragment_shader_src.empty()) {
         glDetachShader(program, fragment_shader);
+    }
+    if (!geometry_shader_src.empty()) {
+        glDetachShader(program, geometry_shader);
     }
 
     glUseProgram(program);
@@ -232,7 +247,9 @@ int main(int argc, char *argv[])
     fmt::print("renderer: {}\n", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
     fmt::print("opengl version: {}\n", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
-    GLuint program = create_program(load_shader_src("src/triangle.vs"), load_shader_src("src/triangle.fs"), {});
+    GLuint program = create_program(load_shader_src("src/triangle.vs"), load_shader_src("src/triangle.fs"), "", {});
+    GLuint programNormals = create_program(load_shader_src("src/normals.vs"),
+        load_shader_src("src/normals.fs"), load_shader_src("src/normals.gs"), {});
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -255,23 +272,32 @@ int main(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         updateTrackball(trackball);
-
         updateModelFromTrackball(trackball, model);
-        unsigned int model_id = glGetUniformLocation(program, "model");
-        glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
-
         updateViewFromTrackball(trackball, view);
-        unsigned int view_id = glGetUniformLocation(program, "view");
-        glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
-
         int screenWidth, screenHeight;
         glfwGetWindowSize(window, &screenWidth, &screenHeight);
         double ratio = static_cast<double>(screenWidth) / static_cast<double>(screenHeight);
         glm::mat4 projection = glm::perspective(glm::radians(45.0), ratio, 0.1, 1000.0);
+
+        unsigned int model_id = glGetUniformLocation(program, "model");
+        glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
+        unsigned int view_id = glGetUniformLocation(program, "view");
+        glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
         unsigned int projection_id = glGetUniformLocation(program, "projection");
         glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
 
+        glUseProgram(program);
         draw(buffer);
+
+        model_id = glGetUniformLocation(program, "model");
+        glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
+        view_id = glGetUniformLocation(program, "view");
+        glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
+        projection_id = glGetUniformLocation(program, "projection");
+        glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
+        glUseProgram(programNormals);
+        draw(buffer);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
