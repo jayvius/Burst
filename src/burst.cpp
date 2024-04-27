@@ -279,23 +279,22 @@ int main(int argc, char *argv[])
         double ratio = static_cast<double>(screenWidth) / static_cast<double>(screenHeight);
         glm::mat4 projection = glm::perspective(glm::radians(45.0), ratio, 0.1, 1000.0);
 
+        glUseProgram(program);
         unsigned int model_id = glGetUniformLocation(program, "model");
         glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
         unsigned int view_id = glGetUniformLocation(program, "view");
         glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
         unsigned int projection_id = glGetUniformLocation(program, "projection");
         glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
-
-        glUseProgram(program);
         draw(buffer);
 
-        model_id = glGetUniformLocation(program, "model");
-        glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
-        view_id = glGetUniformLocation(program, "view");
-        glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
-        projection_id = glGetUniformLocation(program, "projection");
-        glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
         glUseProgram(programNormals);
+        model_id = glGetUniformLocation(programNormals, "model");
+        glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
+        view_id = glGetUniformLocation(programNormals, "view");
+        glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
+        projection_id = glGetUniformLocation(programNormals, "projection");
+        glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
         draw(buffer);
 
         glfwSwapBuffers(window);

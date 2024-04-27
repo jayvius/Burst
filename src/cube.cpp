@@ -29,7 +29,7 @@ void addCube(Buffer &buffer, glm::mat4 transform)
     unsigned char b = 255;
     unsigned char a = 255;
     VertexIndex v0, v1, v2;
-    for (auto i = 0; i < sizeof(triangles); i += 6) {
+    for (auto i = 0; i < sizeof(triangles) / sizeof(uint16_t); i += 6) {
         uint16_t vi, ni;
         vi = triangles[i];
         ni = triangles[i+1];

@@ -36,6 +36,8 @@ void init(Buffer &buffer)
     buffer.vertexBufferUploadSize = 0;
     buffer.indexBufferUploadSize = 0;
     buffer.numVertices = 0;
+
+    glBindVertexArray(0);
 }
 
 VertexIndex addVertex(Buffer &buffer, Vertex &vertex)
@@ -60,6 +62,7 @@ void addTriangle(Buffer &buffer, VertexIndex index1, VertexIndex index2, VertexI
 
 void draw(Buffer &buffer)
 {
+    glBindVertexArray(buffer.vao);
     if (!buffer.vertices.empty()) {
         size_t bufferSize = sizeof(Vertex) * buffer.vertices.size();
         glBufferSubData(GL_ARRAY_BUFFER, buffer.vertexBufferUploadSize, bufferSize, buffer.vertices.data());
@@ -75,4 +78,5 @@ void draw(Buffer &buffer)
     }
 
     glDrawElements(GL_TRIANGLES, buffer.numVertices, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
