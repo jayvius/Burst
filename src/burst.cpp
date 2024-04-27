@@ -259,7 +259,11 @@ int main(int argc, char *argv[])
     // VertexIndex v2 = addVertex(buffer, {{0.0, 0.5, 0.0}, {255, 255, 255, 255}});
     // VertexIndex v3 = addVertex(buffer, {{-0.5, 0.0, 0.0}, {255, 255, 255, 255}});
     // addTriangle(buffer, v1, v2, v3);
-    addCube(buffer, glm::mat4(1.0f));
+    glm::mat4 rotation = glm::mat4(1.0f);
+    rotation = glm::rotate(rotation, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
+    rotation = glm::scale(rotation, glm::vec3(2.0, 2.0, 0.1));
+    addCube(buffer, rotation);
+
 
     glm::mat4 model = glm::mat4(1.0);
     glm::mat4 view = glm::mat4(1.0);
