@@ -155,6 +155,9 @@ void init_gl()
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE); 
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
 }
 
 struct Trackball
@@ -261,7 +264,7 @@ int main(int argc, char *argv[])
     // addTriangle(buffer, v1, v2, v3);
     glm::mat4 rotation = glm::mat4(1.0f);
     rotation = glm::rotate(rotation, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
-    rotation = glm::scale(rotation, glm::vec3(2.0, 2.0, 0.1));
+    //rotation = glm::scale(rotation, glm::vec3(2.0, 2.0, 0.1));
     addCube(buffer, rotation);
 
 
@@ -292,14 +295,14 @@ int main(int argc, char *argv[])
         glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
         draw(buffer);
 
-        glUseProgram(programNormals);
-        model_id = glGetUniformLocation(programNormals, "model");
-        glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
-        view_id = glGetUniformLocation(programNormals, "view");
-        glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
-        projection_id = glGetUniformLocation(programNormals, "projection");
-        glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
-        draw(buffer);
+        // glUseProgram(programNormals);
+        // model_id = glGetUniformLocation(programNormals, "model");
+        // glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
+        // view_id = glGetUniformLocation(programNormals, "view");
+        // glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
+        // projection_id = glGetUniformLocation(programNormals, "projection");
+        // glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
+        // draw(buffer);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
