@@ -33,7 +33,6 @@ class Scanner
 public:
     Scanner(std::string src);
     Token next();
-    Token peek();
     
 private:
     std::string getLexeme();
@@ -47,6 +46,7 @@ private:
     std::string src;
     size_t begin;
     size_t current;
+    size_t lineNum;
 };
 
 #endif

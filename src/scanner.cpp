@@ -43,7 +43,7 @@ std::optional<float> stringToFloat(const std::string& str)
 }
 
 Scanner::Scanner(string src)
-    : src(src), begin(0), current(0)
+    : src(src), begin(0), current(0), lineNum(1)
 {
 
 }
@@ -62,6 +62,7 @@ Token Scanner::next()
         while (isEndline()) {
             current++;
             skipWhitespace();
+            lineNum++;
         }
         return {TokenType::Endline, "", 0, 0};
     }
@@ -81,7 +82,7 @@ Token Scanner::next()
     if (isSymbol())
         return {TokenType::Symbol, getLexeme(), 0, 0};
 
-    return {TokenType::Invalid, getLexeme(), 0, 0};
+    return {TokenType::Invalid, getLexeme(), lineNum, begin+1};
 }
 
 std::string Scanner::getLexeme()
@@ -163,16 +164,16 @@ std::string formatToken(Token &t)
     return fmt::format("invalid token type {}", token_value);
 }
 
-int main(int argc, char *argv[])
-{
-    Scanner s("R1 1:1.0\n  \n \nR1:");
+// int main(int argc, char *argv[])
+// {
+//     Scanner s("R1\nR1: box");
     
-    while (true) {
-        Token t = s.next();
-        if (t.type == TokenType::End)
-            break;
-        fmt::print("{}\n", formatToken(t));
-    }   
+//     while (true) {
+//         Token t = s.next();
+//         if (t.type == TokenType::End)
+//             break;
+//         fmt::print("{}\n", formatToken(t));
+//     }   
     
-    return 0;
-}
+//     return 0;
+// }

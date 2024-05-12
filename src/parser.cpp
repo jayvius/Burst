@@ -1,8 +1,7 @@
 #include "parser.h"
-#include "burst.h"
 #include "opcodes.h"
 #include <cstdlib>
-#include <format>
+#include <fmt/core.h>
 
 void writeOpCode(Rule &rule, OpCode opcode)
 {
@@ -144,24 +143,38 @@ void parseRuleDef(Scanner &scanner, Token &t, std::vector<Rule> &rules)
     // return;
 }
 
-std::vector<Rule> parse(Scanner &scanner)
+void parse(Scanner &scanner, std::vector<Rule> &rules)
 {
-    std::vector<Rule> rules;
     rules.push_back({"", {}, 0, 0});
-    size_t startRuleIndex = 0;
-
-    Token t = scanner.next();
-    if (t.type == TokenType::End)
-        parseError();
+    // writeOpCode(rules[0], OpCode::rotateY);
+    // writeFloat(rules[0], 45.0f);
+    // writeOpCode(rules[0], OpCode::drawBox);
+    // writeOpCode(rules[0], OpCode::exit);
 
     while (true) {
-        Token t = scanner.peek();
-        if (t.type == TokenType::End)
+        Token t = scanner.next();
+        if (t.type == TokenType::End) {
             break;
-        
-        if (t.type != TokenType::Symbol)
-
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "ry") {
+            t = scanner.next();
+            if (t.type != TokenType::Float) {
+                fmt::print(stderr, "ERROR (line {} col {}): Expected float; found '{}'\n", t.line, t.col, t.lexeme);
+                exit(1);
+            }
+            else {
+                writeOpCode(rules[0], OpCode::rotateY);
+                writeFloat(rules[0], t.as.float_value);
+            }
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "box") {
+            writeOpCode(rules[0], OpCode::drawBox);
+        }
+        else if (t.type == TokenType::Invalid) {
+            fmt::print(stderr, "ERROR: Invalid token: {}\n", t.lexeme);
+        }
     }
+    writeOpCode(rules[0], OpCode::exit);
 
     // while (std::optional<Token> t = scanner.next()) {
     //     if (!t || t->type == TokenType::End)
@@ -182,7 +195,4 @@ std::vector<Rule> parse(Scanner &scanner)
     //         exit(1);
     //     }
     // }
-
-    writeOpCode(rules[startRuleIndex], OpCode::exit);
-    return rules;
 }

@@ -30,4 +30,7 @@ g++ $CPPFLAGS \
     src/burst.cpp \
     src/cube.cpp \
     src/buffer.cpp \
+    src/vm.cpp \
+    src/scanner.cpp \
+    src/parser.cpp \
     gl3w/src/gl3w.c
