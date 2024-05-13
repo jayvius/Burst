@@ -11,7 +11,6 @@ enum class TokenType {
     Integer,
     Float,
     Symbol,
-    Invalid
 };
 
 struct Token
@@ -33,6 +32,7 @@ class Scanner
 public:
     Scanner(std::string src);
     Token next();
+    void reset();
     
 private:
     std::string getLexeme();

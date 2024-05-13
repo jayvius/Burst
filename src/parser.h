@@ -4,6 +4,6 @@
 #include "scanner.h"
 #include "rules.h"
 
-void parse(Scanner &scanner, std::vector<Rule> &rules);
+void parse(Scanner &scanner, std::vector<Rule> &rules, size_t &axiomRuleIndex);
 
 #endif

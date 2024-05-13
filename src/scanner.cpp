@@ -55,7 +55,7 @@ Token Scanner::next()
     skipWhitespace();
 
     if (isEnd())
-        return {TokenType::End, "", 0, 0};
+        return {TokenType::End, "", lineNum, begin+1};
 
     if (isEndline()) {
         // Skip blank lines
@@ -64,25 +64,33 @@ Token Scanner::next()
             skipWhitespace();
             lineNum++;
         }
-        return {TokenType::Endline, "", 0, 0};
+        return {TokenType::Endline, "", lineNum, begin+1};
     }
     
     if (isColon()) {
         current++;
-        return {TokenType::Colon, getLexeme(), 0, 0};
+        return {TokenType::Colon, getLexeme(), lineNum, begin+1};
     }
 
     while (!isEnd() && !isEndline() && !isWhitespace() && !isColon())
         current++;
 
     if (std::optional<uint32_t> int_value = stringToUInt32(getLexeme()))
-        return {TokenType::Integer, getLexeme(), 0, 0, .as.int_value=*int_value};
+        return {TokenType::Integer, getLexeme(), lineNum, begin+1, .as.int_value=*int_value};
     if (std::optional<float> float_value = stringToFloat(getLexeme()))
-        return {TokenType::Float, getLexeme(), 0, 0, .as.float_value=*float_value};
+        return {TokenType::Float, getLexeme(), lineNum, begin+1, .as.float_value=*float_value};
     if (isSymbol())
-        return {TokenType::Symbol, getLexeme(), 0, 0};
+        return {TokenType::Symbol, getLexeme(), lineNum, begin+1};
 
-    return {TokenType::Invalid, getLexeme(), lineNum, begin+1};
+    fmt::print("ERROR (line {} col {}): invalid token {}\n", lineNum, begin+1, getLexeme());
+    exit(1);
+}
+
+void Scanner::reset()
+{
+    begin = 0;
+    current = 0;
+    lineNum = 0;
 }
 
 std::string Scanner::getLexeme()
@@ -158,8 +166,6 @@ std::string formatToken(Token &t)
         return fmt::format("type={} lexeme={}", "Integer", t.lexeme);
     if (t.type == TokenType::Float)
         return fmt::format("type={} lexeme={}", "Float", t.lexeme);
-    if (t.type == TokenType::Invalid)
-        return fmt::format("type={} lexeme={}", "Invalid", t.lexeme);
     int token_value = static_cast<std::underlying_type<TokenType>::type>(t.type);
     return fmt::format("invalid token type {}", token_value);
 }

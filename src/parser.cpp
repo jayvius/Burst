@@ -3,6 +3,12 @@
 #include <cstdlib>
 #include <fmt/core.h>
 
+#ifdef BURST_DEBUG
+constexpr bool debug_mode = true;
+#else
+constexpr bool debug_mode = false;
+#endif
+
 void writeOpCode(Rule &rule, OpCode opcode)
 {
     rule.bytecode.push_back(static_cast<uint8_t>(opcode));
@@ -21,11 +27,6 @@ void writeFloat(Rule &rule, float value)
     rule.bytecode.push_back(temp[1]);
     rule.bytecode.push_back(temp[2]);
     rule.bytecode.push_back(temp[3]);
-}
-void parseError(Token &t, std::string error)
-{
-    printf("parse error (line %u): %s\n", t.line, error.c_str());
-    exit(1);
 }
 
 void parseCommand(Scanner &scanner, Token &t, Rule &rule)
@@ -143,36 +144,142 @@ void parseRuleDef(Scanner &scanner, Token &t, std::vector<Rule> &rules)
     // return;
 }
 
-void parse(Scanner &scanner, std::vector<Rule> &rules)
+void parseError(Token &t, std::string msg)
 {
-    rules.push_back({"", {}, 0, 0});
+    fmt::print(stderr, "ERROR (line {} col {}): {}\n", t.line, t.col, msg);
+    exit(1);
+}
+
+std::optional<size_t> findRule(std::vector<Rule> &rules, std::string name)
+{
+    size_t index = 0;
+    for (auto &r: rules) {
+        if (r.name == name)
+            return index;
+        index++;
+    }
+    return std::nullopt;
+}
+
+void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
+{
+    while (true) {
+        Token t = scanner.next();
+        if (t.type == TokenType::End)
+            break;
+        if (t.type == TokenType::Endline)
+            break;
+
+        if (t.type == TokenType::Symbol && t.lexeme == "ry") {
+            t = scanner.next();
+            if (t.type != TokenType::Float) {
+                parseError(t, fmt::format("expected float; found '{}'", t.lexeme));
+            }
+            else {
+                writeOpCode(rules[ruleIndex], OpCode::rotateY);
+                writeFloat(rules[ruleIndex], t.as.float_value);
+            }
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "box") {
+            writeOpCode(rules[ruleIndex], OpCode::drawBox);
+        }
+        else {
+            parseError(t, fmt::format("unexpected symbol '{}'", t.lexeme));
+        }
+    }
+}
+
+bool isEnd(Token &t)
+{
+    return t.type == TokenType::End;
+}
+
+bool isEndLine(Token &t)
+{
+    return t.type == TokenType::Endline;
+}
+
+bool isSymbol(Token &t)
+{
+    return t.type == TokenType::Symbol;
+}
+
+bool isColon(Token &t)
+{
+    return t.type == TokenType::Colon;
+}
+
+void parse(Scanner &scanner, std::vector<Rule> &rules, size_t &axiomRuleIndex)
+{
+    //rules.push_back({"", {}, 0, 0});
     // writeOpCode(rules[0], OpCode::rotateY);
     // writeFloat(rules[0], 45.0f);
     // writeOpCode(rules[0], OpCode::drawBox);
     // writeOpCode(rules[0], OpCode::exit);
 
+    // Build rules table
     while (true) {
         Token t = scanner.next();
-        if (t.type == TokenType::End) {
+        if (isEnd(t))
             break;
-        }
-        else if (t.type == TokenType::Symbol && t.lexeme == "ry") {
-            t = scanner.next();
-            if (t.type != TokenType::Float) {
-                fmt::print(stderr, "ERROR (line {} col {}): Expected float; found '{}'\n", t.line, t.col, t.lexeme);
-                exit(1);
-            }
-            else {
-                writeOpCode(rules[0], OpCode::rotateY);
-                writeFloat(rules[0], t.as.float_value);
-            }
-        }
-        else if (t.type == TokenType::Symbol && t.lexeme == "box") {
-            writeOpCode(rules[0], OpCode::drawBox);
-        }
-        else if (t.type == TokenType::Invalid) {
-            fmt::print(stderr, "ERROR: Invalid token: {}\n", t.lexeme);
-        }
+
+        t = scanner.next();
+        if (!isEndLine(t))
+            continue;
+
+        t = scanner.next();
+        if (!isSymbol(t))
+            continue;
+        std::string ruleName = t.lexeme;
+
+        t = scanner.next();
+        if (!isColon(t))
+            continue;
+
+        rules.push_back({ruleName, {}, 0, 0});
+    }
+
+    scanner.reset();
+
+    // Find axiom
+    while (true) {
+        Token t = scanner.next();
+        if (isEnd(t))
+            parseError(t, "No axiom found");
+        if (isEndLine(t))
+            continue;
+        if (!isSymbol(t))
+            parseError(t, fmt::format("invalid token '{}'", t.lexeme));
+        Token prev = t;
+        t = scanner.next();
+        if (!isEndLine(t))
+            parseError(t, "axiom must be defined before rule defintions");
+        auto foundRuleIndex = findRule(rules, prev.lexeme);
+        if (!foundRuleIndex)
+            parseError(t, "axiom rule not defined");
+        axiomRuleIndex = *foundRuleIndex;
+        break;
+    }
+
+    // Find rule defs and parse them
+    while (true) {
+        Token t = scanner.next();
+        if (t.type == TokenType::End)
+            break;
+        if (t.type == TokenType::Endline)
+            continue;
+        if (t.type != TokenType::Symbol)
+            parseError(t, fmt::format("unexpected token '{}'", t.lexeme));
+        std::string ruleName = t.lexeme;
+
+        t = scanner.next();
+        if (t.type != TokenType::Colon)
+            parseError(t, "expected rule def");
+
+        auto foundRuleIndex = findRule(rules, ruleName);
+        if (!foundRuleIndex)
+            parseError(t, fmt::format("undefined rule '{}'", ruleName));
+        parseRuleDef(scanner, rules, *foundRuleIndex);
     }
     writeOpCode(rules[0], OpCode::exit);
 

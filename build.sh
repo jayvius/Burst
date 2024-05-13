@@ -11,7 +11,7 @@ fi
 CPPFLAGS="-Wall -std=c++20 -Wno-deprecated"
 if [ "$debug" = true ]; then
     echo "Building debug version..."
-    CPPFLAGS="${CPPFLAGS} -g"
+    CPPFLAGS="${CPPFLAGS} -g -D BURST_DEBUG"
 else
     echo "Building release version..."
     CPPFLAGS="${CPPFLAGS} -O2"
