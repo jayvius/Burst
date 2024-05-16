@@ -165,9 +165,7 @@ void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
 {
     while (true) {
         Token t = scanner.next();
-        if (t.type == TokenType::End)
-            break;
-        if (t.type == TokenType::Endline)
+        if (t.type == TokenType::End || t.type == TokenType::Endline)
             break;
 
         if (t.type == TokenType::Symbol && t.lexeme == "ry") {
@@ -182,6 +180,13 @@ void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
         }
         else if (t.type == TokenType::Symbol && t.lexeme == "box") {
             writeOpCode(rules[ruleIndex], OpCode::drawBox);
+        }
+        else if (t.type == TokenType::Symbol) {
+            writeOpCode(rules[ruleIndex], OpCode::callRule);
+            auto nextRule = findRule(rules, t.lexeme);
+            if (!nextRule)
+                parseError(t, fmt::format("undefined rule {}", t.lexeme));
+            writeInt(rules[ruleIndex], *nextRule);
         }
         else {
             parseError(t, fmt::format("unexpected symbol '{}'", t.lexeme));
@@ -209,7 +214,7 @@ bool isColon(Token &t)
     return t.type == TokenType::Colon;
 }
 
-void parse(Scanner &scanner, std::vector<Rule> &rules, size_t &axiomRuleIndex)
+void parse(Scanner &scanner, std::vector<Rule> &rules)
 {
     //rules.push_back({"", {}, 0, 0});
     // writeOpCode(rules[0], OpCode::rotateY);
@@ -222,12 +227,9 @@ void parse(Scanner &scanner, std::vector<Rule> &rules, size_t &axiomRuleIndex)
         Token t = scanner.next();
         if (isEnd(t))
             break;
-
-        t = scanner.next();
-        if (!isEndLine(t))
+        if (isEndLine(t))
             continue;
 
-        t = scanner.next();
         if (!isSymbol(t))
             continue;
         std::string ruleName = t.lexeme;
@@ -236,30 +238,18 @@ void parse(Scanner &scanner, std::vector<Rule> &rules, size_t &axiomRuleIndex)
         if (!isColon(t))
             continue;
 
-        rules.push_back({ruleName, {}, 0, 0});
+        if (findRule(rules, ruleName))
+            parseError(t, fmt::format("duplicate rule name '{}'", ruleName));
+        rules.push_back({ruleName, {}, 0, 50});
+
+        while (true) {
+            t = scanner.next();
+            if (isEnd(t) || isEndLine(t))
+                break;
+        }
     }
 
     scanner.reset();
-
-    // Find axiom
-    while (true) {
-        Token t = scanner.next();
-        if (isEnd(t))
-            parseError(t, "No axiom found");
-        if (isEndLine(t))
-            continue;
-        if (!isSymbol(t))
-            parseError(t, fmt::format("invalid token '{}'", t.lexeme));
-        Token prev = t;
-        t = scanner.next();
-        if (!isEndLine(t))
-            parseError(t, "axiom must be defined before rule defintions");
-        auto foundRuleIndex = findRule(rules, prev.lexeme);
-        if (!foundRuleIndex)
-            parseError(t, "axiom rule not defined");
-        axiomRuleIndex = *foundRuleIndex;
-        break;
-    }
 
     // Find rule defs and parse them
     while (true) {

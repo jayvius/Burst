@@ -159,6 +159,7 @@ void init_gl()
     glEnable(GL_CULL_FACE); 
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
+    glEnable(GL_DEPTH_TEST);
 }
 
 struct Trackball
@@ -268,7 +269,7 @@ int main(int argc, char *argv[])
     //rotation = glm::scale(rotation, glm::vec3(2.0, 2.0, 0.1));
     //addCube(buffer, rotation);
     VM vm;
-    run(vm, "R1\nR1: ry 45.0 box\nR2: box", buffer);
+    run(vm, "R0: ry 5.0 box R0", buffer);
 
     glm::mat4 model = glm::mat4(1.0);
     glm::mat4 view = glm::mat4(1.0);
@@ -278,7 +279,7 @@ int main(int argc, char *argv[])
     glfwSetWindowUserPointer(window, &trackball);
 
     while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         updateTrackball(trackball);
         updateModelFromTrackball(trackball, model);
