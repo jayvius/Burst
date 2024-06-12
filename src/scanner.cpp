@@ -52,6 +52,7 @@ Token Scanner::next()
 {
     begin = current;
 
+    // Look for beginning of next token or endline
     skipWhitespace();
 
     if (isEnd())
@@ -67,22 +68,34 @@ Token Scanner::next()
         return {TokenType::Endline, "", lineNum, begin+1};
     }
     
+    // Handle single char tokens
     if (isColon()) {
         current++;
         return {TokenType::Colon, ":", lineNum, begin+1};
     }
+    if (isLeftParen()) {
+        current++;
+        return {TokenType::LeftParen, "(", lineNum, begin+1};
+    }
+    if (isRightParen()) {
+        current++;
+        return {TokenType::RightParen, ")", lineNum, begin+1};
+    }
+    if (isOrOperator()) {
+        current++;
+        return {TokenType::OrOperator, "|", lineNum, begin+1};
+    }
 
-    while (!isEnd() && !isEndline() && !isWhitespace() && !isColon())
+    // Look for end of current token
+    while (!isEnd() && !isEndline() && !isWhitespace()
+           && !isColon() && !isLeftParen() && !isRightParen() && !isOrOperator())
         current++;
 
+    // Handle symbol or value tokens
     if (std::optional<uint32_t> int_value = stringToUInt32(getLexeme()))
         return {TokenType::Integer, getLexeme(), lineNum, begin+1, .as.int_value=*int_value};
     if (std::optional<float> float_value = stringToFloat(getLexeme()))
         return {TokenType::Float, getLexeme(), lineNum, begin+1, .as.float_value=*float_value};
-    if (isLeftParen())
-        return {TokenType::LeftParen, "(", lineNum, begin+1};
-    if (isRightParen())
-        return {TokenType::RightParen, ")", lineNum, begin+1};
     if (isSymbol())
         return {TokenType::Symbol, getLexeme(), lineNum, begin+1};
 
