@@ -69,7 +69,7 @@ Token Scanner::next()
     
     if (isColon()) {
         current++;
-        return {TokenType::Colon, getLexeme(), lineNum, begin+1};
+        return {TokenType::Colon, ":", lineNum, begin+1};
     }
 
     while (!isEnd() && !isEndline() && !isWhitespace() && !isColon())
@@ -79,6 +79,10 @@ Token Scanner::next()
         return {TokenType::Integer, getLexeme(), lineNum, begin+1, .as.int_value=*int_value};
     if (std::optional<float> float_value = stringToFloat(getLexeme()))
         return {TokenType::Float, getLexeme(), lineNum, begin+1, .as.float_value=*float_value};
+    if (isLeftParen())
+        return {TokenType::LeftParen, "(", lineNum, begin+1};
+    if (isRightParen())
+        return {TokenType::RightParen, ")", lineNum, begin+1};
     if (isSymbol())
         return {TokenType::Symbol, getLexeme(), lineNum, begin+1};
 
@@ -142,6 +146,21 @@ bool isAlpha(char c)
         || (c >= 'A' && c <= 'Z');
 }
 
+bool Scanner::isLeftParen()
+{
+    return src[current] == '(';
+}
+
+bool Scanner::isRightParen()
+{
+    return src[current] == ')';
+}
+
+bool Scanner::isOrOperator()
+{
+    return src[current] == '|';
+}
+
 bool Scanner::isSymbol()
 {
     size_t i = begin;
@@ -166,6 +185,12 @@ std::string formatToken(Token &t)
         return fmt::format("type={} lexeme={}", "Integer", t.lexeme);
     if (t.type == TokenType::Float)
         return fmt::format("type={} lexeme={}", "Float", t.lexeme);
+    if (t.type == TokenType::LeftParen)
+        return fmt::format("type={} lexeme={}", "LeftParen", t.lexeme);
+    if (t.type == TokenType::RightParen)
+        return fmt::format("type={} lexeme={}", "RightParen", t.lexeme);
+    if (t.type == TokenType::OrOperator)
+        return fmt::format("type={} lexeme={}", "OrOperator", t.lexeme);
     int token_value = static_cast<std::underlying_type<TokenType>::type>(t.type);
     return fmt::format("invalid token type {}", token_value);
 }

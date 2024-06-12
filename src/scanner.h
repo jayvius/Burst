@@ -11,6 +11,9 @@ enum class TokenType {
     Integer,
     Float,
     Symbol,
+    LeftParen,
+    RightParen,
+    OrOperator,
 };
 
 struct Token
@@ -41,6 +44,9 @@ private:
     bool isEnd();
     bool isEndline();
     bool isColon();
+    bool isLeftParen();
+    bool isRightParen();
+    bool isOrOperator();
     bool isSymbol();
 
     std::string src;
