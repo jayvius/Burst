@@ -13,7 +13,6 @@ enum class TokenType {
     Symbol,
     LeftParen,
     RightParen,
-    OrOperator,
 };
 
 struct Token
@@ -46,7 +45,6 @@ private:
     bool isColon();
     bool isLeftParen();
     bool isRightParen();
-    bool isOrOperator();
     bool isSymbol();
 
     std::string src;

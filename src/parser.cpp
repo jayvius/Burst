@@ -161,6 +161,44 @@ std::optional<size_t> findRule(std::vector<Rule> &rules, std::string name)
     return std::nullopt;
 }
 
+void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
+{
+    std::vector<size_t> ruleIndices;
+
+    while (1) {
+        Token t = scanner.next();
+        if (t.type == TokenType::RightParen)
+            break;
+
+        if (t.type == TokenType::Symbol) {
+            auto ruleIndex = findRule(rules, t.lexeme);
+            if (!ruleIndex)
+                parseError(t, fmt::format("undefined rule: {}", t.lexeme));
+            if (ruleIndices.size() == 255)
+                parseError(t, fmt::format("max number of random rules reached (255)"));
+            ruleIndices.push_back(*ruleIndex);
+        }
+        else {
+            parseError(t, fmt::format("expected rule name"));
+        }
+    }
+
+    if (ruleIndices.size() == 0) {
+        return;
+    }
+
+    if (ruleIndices.size() == 1) {
+        writeOpCode(rules[ruleIndex], OpCode::callRule);
+        writeInt(rules[ruleIndex], ruleIndices[0]);
+        return;
+    }
+
+    writeOpCode(rules[ruleIndex], OpCode::callRandomRule);
+    writeInt(rules[ruleIndex], static_cast<uint8_t>(ruleIndices.size()));
+    for (auto i: ruleIndices)
+        writeInt(rules[ruleIndex], i);
+}
+
 void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
 {
     while (true) {
@@ -178,6 +216,16 @@ void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
                 writeFloat(rules[ruleIndex], t.as.float_value);
             }
         }
+        else if (t.type == TokenType::Symbol && t.lexeme == "ty") {
+            t = scanner.next();
+            if (t.type != TokenType::Float) {
+                parseError(t, fmt::format("expected float; found '{}'", t.lexeme));
+            }
+            else {
+                writeOpCode(rules[ruleIndex], OpCode::translateY);
+                writeFloat(rules[ruleIndex], t.as.float_value);
+            }
+        }
         else if (t.type == TokenType::Symbol && t.lexeme == "box") {
             writeOpCode(rules[ruleIndex], OpCode::drawBox);
         }
@@ -187,6 +235,9 @@ void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
             if (!nextRule)
                 parseError(t, fmt::format("undefined rule {}", t.lexeme));
             writeInt(rules[ruleIndex], *nextRule);
+        }
+        else if (t.type == TokenType::LeftParen) {
+            parseRandomRuleCall(scanner, rules, ruleIndex);
         }
         else {
             parseError(t, fmt::format("unexpected symbol '{}'", t.lexeme));

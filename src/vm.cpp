@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "cube.hpp"
 #include <fmt/core.h>
+#include <cstdlib>
 
 OpCode readOpCode(Rule &rule, size_t &bytecodeIndex)
 {
@@ -32,6 +33,11 @@ void drawBox(Buffer &buffer, glm::mat4 &transformation)
 void rotateY(glm::mat4 &transformation, float delta)
 {
     transformation = glm::rotate(transformation, glm::radians(delta), glm::vec3(0.0, 1.0, 0.0));
+}
+
+void translateY(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::translate(transformation, glm::vec3(0.0, delta, 0.0));
 }
 
 void runtimeError(std::string error)
@@ -76,8 +82,28 @@ void run(VM &vm, std::string src, Buffer &buffer)
             float delta = readFloat(rules[ruleIndex], bytecodeIndex);
             rotateY(transformation, delta);
         }
+        else if (opcode == OpCode::translateY) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            translateY(transformation, delta);
+        }
         else if (opcode == OpCode::callRule) {
             uint8_t nextRuleIndex = readInt(rules[ruleIndex], bytecodeIndex);
+            if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
+                continue;
+            rules[nextRuleIndex].currentDepth++;
+            ruleIndexStack.push_back(ruleIndex);
+            ruleIndex = nextRuleIndex;
+            bytecodeIndexStack.push_back(bytecodeIndex);
+            bytecodeIndex = 0;
+            transformationStack.push_back(transformation);
+        }
+        else if (opcode == OpCode::callRandomRule) {
+            uint8_t numRules = readInt(rules[ruleIndex], bytecodeIndex);
+            std::vector<size_t> ruleSet;
+            for (auto i = 0; i < numRules; i++)
+                ruleSet.push_back(readInt(rules[ruleIndex], bytecodeIndex));
+            size_t nextRuleIndex = ruleSet[std::rand() % ruleSet.size()];
+
             if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
                 continue;
             rules[nextRuleIndex].currentDepth++;
@@ -91,7 +117,7 @@ void run(VM &vm, std::string src, Buffer &buffer)
             continue;
         }
         else {
-            runtimeError("invalid opcode");
+            runtimeError(fmt::format("invalid opcode: {}", static_cast<int>(opcode)));
         }
     }
 

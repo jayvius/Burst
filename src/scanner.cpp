@@ -81,14 +81,10 @@ Token Scanner::next()
         current++;
         return {TokenType::RightParen, ")", lineNum, begin+1};
     }
-    if (isOrOperator()) {
-        current++;
-        return {TokenType::OrOperator, "|", lineNum, begin+1};
-    }
 
     // Look for end of current token
     while (!isEnd() && !isEndline() && !isWhitespace()
-           && !isColon() && !isLeftParen() && !isRightParen() && !isOrOperator())
+           && !isColon() && !isLeftParen() && !isRightParen())
         current++;
 
     // Handle symbol or value tokens
@@ -169,11 +165,6 @@ bool Scanner::isRightParen()
     return src[current] == ')';
 }
 
-bool Scanner::isOrOperator()
-{
-    return src[current] == '|';
-}
-
 bool Scanner::isSymbol()
 {
     size_t i = begin;
@@ -202,8 +193,6 @@ std::string formatToken(Token &t)
         return fmt::format("type={} lexeme={}", "LeftParen", t.lexeme);
     if (t.type == TokenType::RightParen)
         return fmt::format("type={} lexeme={}", "RightParen", t.lexeme);
-    if (t.type == TokenType::OrOperator)
-        return fmt::format("type={} lexeme={}", "OrOperator", t.lexeme);
     int token_value = static_cast<std::underlying_type<TokenType>::type>(t.type);
     return fmt::format("invalid token type {}", token_value);
 }
