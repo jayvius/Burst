@@ -30,14 +30,54 @@ void drawBox(Buffer &buffer, glm::mat4 &transformation)
     addCube(buffer, transformation);
 }
 
-void rotateY(glm::mat4 &transformation, float delta)
+void translateX(glm::mat4 &transformation, float delta)
 {
-    transformation = glm::rotate(transformation, glm::radians(delta), glm::vec3(0.0, 1.0, 0.0));
+    transformation = glm::translate(transformation, glm::vec3(delta, 0.0, 0.0));
 }
 
 void translateY(glm::mat4 &transformation, float delta)
 {
     transformation = glm::translate(transformation, glm::vec3(0.0, delta, 0.0));
+}
+
+void translateZ(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::translate(transformation, glm::vec3(0.0, 0.0, delta));
+}
+
+void rotateX(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::rotate(transformation, glm::radians(delta), glm::vec3(1.0, 0.0, 0.0));
+}
+
+void rotateY(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::rotate(transformation, glm::radians(delta), glm::vec3(0.0, 1.0, 0.0));
+}
+
+void rotateZ(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::rotate(transformation, glm::radians(delta), glm::vec3(0.0, 0.0, 1.0));
+}
+
+void scale(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::scale(transformation, glm::vec3(delta, delta, delta));
+}
+
+void scaleX(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::scale(transformation, glm::vec3(delta, 0.0, 0.0));
+}
+
+void scaleY(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::scale(transformation, glm::vec3(0.0, delta, 0.0));
+}
+
+void scaleZ(glm::mat4 &transformation, float delta)
+{
+    transformation = glm::scale(transformation, glm::vec3(0.0, 0.0, delta));
 }
 
 void runtimeError(std::string error)
@@ -61,9 +101,9 @@ void run(VM &vm, std::string src, Buffer &buffer)
     parse(scanner, rules);
 
     while (true) {
-        if (bytecodeIndex >= rules[ruleIndex].bytecode.size()) {
+        while (bytecodeIndex >= rules[ruleIndex].bytecode.size()) {
             if (ruleIndexStack.empty() || bytecodeIndexStack.empty())
-                break;
+                return;
             
             rules[ruleIndex].currentDepth--;
             ruleIndex = ruleIndexStack.back();
@@ -78,13 +118,45 @@ void run(VM &vm, std::string src, Buffer &buffer)
         if (opcode == OpCode::drawBox) {
             drawBox(buffer, transformation);
         }
-        else if (opcode == OpCode::rotateY) {
+        else if (opcode == OpCode::translateX) {
             float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            rotateY(transformation, delta);
+            translateX(transformation, delta);
         }
         else if (opcode == OpCode::translateY) {
             float delta = readFloat(rules[ruleIndex], bytecodeIndex);
             translateY(transformation, delta);
+        }
+        else if (opcode == OpCode::translateZ) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            translateZ(transformation, delta);
+        }
+        else if (opcode == OpCode::rotateX) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            rotateX(transformation, delta);
+        }
+        else if (opcode == OpCode::rotateY) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            rotateY(transformation, delta);
+        }
+        else if (opcode == OpCode::rotateZ) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            rotateZ(transformation, delta);
+        }
+        else if (opcode == OpCode::scale) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            scale(transformation, delta);
+        }
+        else if (opcode == OpCode::scaleX) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            scaleX(transformation, delta);
+        }
+        else if (opcode == OpCode::scaleY) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            scaleY(transformation, delta);
+        }
+        else if (opcode == OpCode::scaleZ) {
+            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
+            scaleZ(transformation, delta);
         }
         else if (opcode == OpCode::callRule) {
             uint8_t nextRuleIndex = readInt(rules[ruleIndex], bytecodeIndex);

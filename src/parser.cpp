@@ -9,6 +9,21 @@ constexpr bool debug_mode = true;
 constexpr bool debug_mode = false;
 #endif
 
+void parseError(Token &t, std::string msg)
+{
+    fmt::print(stderr, "ERROR (line {} col {}): {}\n", t.line, t.col, msg);
+    exit(1);
+}
+
+float parseFloat(Scanner &scanner)
+{
+    Token t = scanner.next();
+    if (t.type != TokenType::Float) {
+        parseError(t, fmt::format("expected float; found '{}'", t.lexeme));
+    }
+    return t.as.float_value;
+}
+
 void writeOpCode(Rule &rule, OpCode opcode)
 {
     rule.bytecode.push_back(static_cast<uint8_t>(opcode));
@@ -144,12 +159,6 @@ void parseRuleDef(Scanner &scanner, Token &t, std::vector<Rule> &rules)
     // return;
 }
 
-void parseError(Token &t, std::string msg)
-{
-    fmt::print(stderr, "ERROR (line {} col {}): {}\n", t.line, t.col, msg);
-    exit(1);
-}
-
 std::optional<size_t> findRule(std::vector<Rule> &rules, std::string name)
 {
     size_t index = 0;
@@ -206,25 +215,55 @@ void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
         if (t.type == TokenType::End || t.type == TokenType::Endline)
             break;
 
-        if (t.type == TokenType::Symbol && t.lexeme == "ry") {
-            t = scanner.next();
-            if (t.type != TokenType::Float) {
-                parseError(t, fmt::format("expected float; found '{}'", t.lexeme));
-            }
-            else {
-                writeOpCode(rules[ruleIndex], OpCode::rotateY);
-                writeFloat(rules[ruleIndex], t.as.float_value);
-            }
+        if (t.type == TokenType::Symbol && t.lexeme == "tx") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::translateX);
+            writeFloat(rules[ruleIndex], delta);
         }
         else if (t.type == TokenType::Symbol && t.lexeme == "ty") {
-            t = scanner.next();
-            if (t.type != TokenType::Float) {
-                parseError(t, fmt::format("expected float; found '{}'", t.lexeme));
-            }
-            else {
-                writeOpCode(rules[ruleIndex], OpCode::translateY);
-                writeFloat(rules[ruleIndex], t.as.float_value);
-            }
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::translateY);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "tz") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::translateZ);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "rx") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::rotateX);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "ry") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::rotateY);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "rz") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::rotateZ);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "s") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::scale);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "sx") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::scaleX);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "sy") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::scaleY);
+            writeFloat(rules[ruleIndex], delta);
+        }
+        else if (t.type == TokenType::Symbol && t.lexeme == "sz") {
+            float delta = parseFloat(scanner);
+            writeOpCode(rules[ruleIndex], OpCode::scaleZ);
+            writeFloat(rules[ruleIndex], delta);
         }
         else if (t.type == TokenType::Symbol && t.lexeme == "box") {
             writeOpCode(rules[ruleIndex], OpCode::drawBox);
@@ -291,7 +330,7 @@ void parse(Scanner &scanner, std::vector<Rule> &rules)
 
         if (findRule(rules, ruleName))
             parseError(t, fmt::format("duplicate rule name '{}'", ruleName));
-        rules.push_back({ruleName, {}, 0, 50});
+        rules.push_back({ruleName, {}, 0, 100});
 
         while (true) {
             t = scanner.next();

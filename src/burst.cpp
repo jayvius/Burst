@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
     //rotation = glm::scale(rotation, glm::vec3(2.0, 2.0, 0.1));
     //addCube(buffer, rotation);
     VM vm;
-    run(vm, "R0: ry 5.0 box (R0 R1)\nR1: ty 1.0 R0", buffer);
+    run(vm, "R0: tx 1.0 box s 0.95 (R0 R1 R2)\nR1: ty 1.0 box s 0.95 (R0 R1 R2)\nR2: tz 1.0 box s 0.95 (R0 R1 R2)", buffer);
     //run(vm, "R0: ry 5.0 box R0", buffer);
 
     glm::mat4 model = glm::mat4(1.0);
