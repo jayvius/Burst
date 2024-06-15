@@ -86,7 +86,7 @@ void runtimeError(std::string error)
     exit(1);
 }
 
-void run(VM &vm, std::string src, Buffer &buffer)
+void run(std::string src, VM &vm, Buffer &buffer)
 {
     std::vector<Rule> rules;
     size_t ruleIndex = 0;

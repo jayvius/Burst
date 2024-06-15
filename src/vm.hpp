@@ -12,6 +12,6 @@ struct VM
     glm::mat4 transformation;
 };
 
-void run(VM &vm, std::string src, Buffer &buffer);
+void run(std::string src, VM &vm, Buffer &buffer);
 
 #endif

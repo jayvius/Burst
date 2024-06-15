@@ -1,4 +1,7 @@
 - Add maxdepth
 - Improve error handling
 - Add debug logging
-- Add duplicate rule names and random selection
+- add colors
+- add random seed
+- add animation
+- export to obj

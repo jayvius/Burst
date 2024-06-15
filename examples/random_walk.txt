@@ -1,0 +1,4 @@
+R0: tx -5.0 ty -5.0 tz -5.0 R1
+R1: tx 1.0 box s 0.95 (R1 R2 R3)
+R2: ty 1.0 box s 0.95 (R1 R2 R3)
+R3: tz 1.0 box s 0.95 (R1 R2 R3)

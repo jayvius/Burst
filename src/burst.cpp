@@ -18,7 +18,7 @@
 #include "buffer.hpp"
 #include "vm.hpp"
 
-std::string load_shader_src(const std::string &shader_filename)
+std::string loadFile(const std::string &shader_filename)
 {
     std::ifstream input(shader_filename);
     std::stringstream buffer;
@@ -241,6 +241,12 @@ static void trackballDragCallback(GLFWwindow* window, double xpos, double ypos)
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2) {
+        fprintf(stderr, "ERROR: missing input script\n");
+        exit(1);
+    }
+    std::string src = loadFile(std::string(argv[1]));
+
     GLFWwindow* window = create_window(800, 800, "Burst");
     init_gl();
 
@@ -252,9 +258,9 @@ int main(int argc, char *argv[])
     fmt::print("renderer: {}\n", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
     fmt::print("opengl version: {}\n", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
-    GLuint program = create_program(load_shader_src("src/triangle.vs"), load_shader_src("src/triangle.fs"), "", {});
-    GLuint programNormals = create_program(load_shader_src("src/normals.vs"),
-        load_shader_src("src/normals.fs"), load_shader_src("src/normals.gs"), {});
+    GLuint program = create_program(loadFile("src/triangle.vs"), loadFile("src/triangle.fs"), "", {});
+    GLuint programNormals = create_program(loadFile("src/normals.vs"),
+        loadFile("src/normals.fs"), loadFile("src/normals.gs"), {});
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -269,8 +275,8 @@ int main(int argc, char *argv[])
     //rotation = glm::scale(rotation, glm::vec3(2.0, 2.0, 0.1));
     //addCube(buffer, rotation);
     VM vm;
-    run(vm, "R0: tx 1.0 box s 0.95 (R0 R1 R2)\nR1: ty 1.0 box s 0.95 (R0 R1 R2)\nR2: tz 1.0 box s 0.95 (R0 R1 R2)", buffer);
-    //run(vm, "R0: ry 5.0 box R0", buffer);
+    //run(vm, "R0: tx -5.0 ty -5.0 tz -5.0 R1\nR1: tx 1.0 box s 0.95 (R1 R2 R3)\nR2: ty 1.0 box s 0.95 (R1 R2 R3)\nR3: tz 1.0 box s 0.95 (R1 R2 R3)", buffer);
+    run(src, vm, buffer);
 
     glm::mat4 model = glm::mat4(1.0);
     glm::mat4 view = glm::mat4(1.0);
