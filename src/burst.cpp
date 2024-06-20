@@ -122,11 +122,17 @@ GLuint create_program(std::string vertex_shader_src,
     return program;
 }
 
+void exportObjects()
+{
+    fmt::print("Not implemented yet\n");
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
-    }
+    else if (key == GLFW_KEY_E && action == GLFW_PRESS)
+        exportObjects();
 }
 
 GLFWwindow* create_window(int width, int height, const char *title)
@@ -266,16 +272,8 @@ int main(int argc, char *argv[])
 
     Buffer buffer;
     init(buffer);
-    // VertexIndex v1 = addVertex(buffer, {{0.5, 0.0, 0.0}, {255, 255, 255, 255}});
-    // VertexIndex v2 = addVertex(buffer, {{0.0, 0.5, 0.0}, {255, 255, 255, 255}});
-    // VertexIndex v3 = addVertex(buffer, {{-0.5, 0.0, 0.0}, {255, 255, 255, 255}});
-    // addTriangle(buffer, v1, v2, v3);
-    //glm::mat4 rotation = glm::mat4(1.0f);
-    //rotation = glm::rotate(rotation, glm::radians(45.0f), glm::vec3(0.0, 1.0, 0.0));
-    //rotation = glm::scale(rotation, glm::vec3(2.0, 2.0, 0.1));
-    //addCube(buffer, rotation);
+
     VM vm;
-    //run(vm, "R0: tx -5.0 ty -5.0 tz -5.0 R1\nR1: tx 1.0 box s 0.95 (R1 R2 R3)\nR2: ty 1.0 box s 0.95 (R1 R2 R3)\nR3: tz 1.0 box s 0.95 (R1 R2 R3)", buffer);
     run(src, vm, buffer);
 
     glm::mat4 model = glm::mat4(1.0);
@@ -304,15 +302,6 @@ int main(int argc, char *argv[])
         unsigned int projection_id = glGetUniformLocation(program, "projection");
         glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
         draw(buffer);
-
-        // glUseProgram(programNormals);
-        // model_id = glGetUniformLocation(programNormals, "model");
-        // glUniformMatrix4fv(model_id, 1, GL_FALSE, glm::value_ptr(model));
-        // view_id = glGetUniformLocation(programNormals, "view");
-        // glUniformMatrix4fv(view_id, 1, GL_FALSE, glm::value_ptr(view));
-        // projection_id = glGetUniformLocation(programNormals, "projection");
-        // glUniformMatrix4fv(projection_id, 1, GL_FALSE, glm::value_ptr(projection));
-        // draw(buffer);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

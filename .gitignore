@@ -1,4 +1,4 @@
 *.swp
-bin/*
-!bin/data
-obj
+burst
+burst_debug
+*.dSYM

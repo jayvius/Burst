@@ -9,12 +9,15 @@ elif [ $# -eq 1 ]; then
 fi
 
 CPPFLAGS="-Wall -std=c++20 -Wno-deprecated"
+OUTPUT=
 if [ "$debug" = true ]; then
     echo "Building debug version..."
     CPPFLAGS="${CPPFLAGS} -g -D BURST_DEBUG"
+    OUTPUT=burst_debug
 else
     echo "Building release version..."
     CPPFLAGS="${CPPFLAGS} -O2"
+    OUTPUT=burst
 fi
 
 g++ $CPPFLAGS \
@@ -26,7 +29,7 @@ g++ $CPPFLAGS \
     -L /opt/homebrew/Cellar/fmt/10.2.1_1/lib \
     -l glfw \
     -l fmt \
-    -o burst \
+    -o $OUTPUT \
     src/burst.cpp \
     src/cube.cpp \
     src/buffer.cpp \

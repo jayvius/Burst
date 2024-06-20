@@ -196,17 +196,3 @@ std::string formatToken(Token &t)
     int token_value = static_cast<std::underlying_type<TokenType>::type>(t.type);
     return fmt::format("invalid token type {}", token_value);
 }
-
-// int main(int argc, char *argv[])
-// {
-//     Scanner s("R1\nR1: box");
-    
-//     while (true) {
-//         Token t = s.next();
-//         if (t.type == TokenType::End)
-//             break;
-//         fmt::print("{}\n", formatToken(t));
-//     }   
-    
-//     return 0;
-// }
