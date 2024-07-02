@@ -122,17 +122,23 @@ GLuint create_program(std::string vertex_shader_src,
     return program;
 }
 
-void exportObjects()
+void exportObjects(Buffer &buffer)
 {
-    fmt::print("Not implemented yet\n");
+    fmt::print("{}\n", buffer.vertices.size());
+    for (auto &vertex: buffer.vertices) {
+        fmt::print("v {} {} {}\n", vertex.position[0], vertex.position[1], vertex.position[2]);
+    }
+    size_t i = 0;
+    while (i < buffer.indices.size()) {
+        fmt::print("f {} {} {}\n", buffer.indices[i] + 1, buffer.indices[i+1] + 1, buffer.indices[i+2] + 1);
+        i += 3;
+    }
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
-    else if (key == GLFW_KEY_E && action == GLFW_PRESS)
-        exportObjects();
 }
 
 GLFWwindow* create_window(int width, int height, const char *title)
@@ -253,6 +259,17 @@ int main(int argc, char *argv[])
     }
     std::string src = loadFile(std::string(argv[1]));
 
+    bool exportMode = false;
+    if (argc == 3) {
+        if (strcmp(argv[2], "--export") == 0 && strlen(argv[2]) == strlen("--export")) {
+            exportMode = true;
+        }
+        else {
+            fprintf(stderr, "ERROR: invalid flag %s\n", argv[2]);
+            exit(1);
+        }
+    }
+
     GLFWwindow* window = create_window(800, 800, "Burst");
     init_gl();
 
@@ -270,11 +287,16 @@ int main(int argc, char *argv[])
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    Buffer buffer;
+    static Buffer buffer;
     init(buffer);
 
     VM vm;
     run(src, vm, buffer);
+
+    if (exportMode) {
+        exportObjects(buffer);
+        return 0;
+    }
 
     glm::mat4 model = glm::mat4(1.0);
     glm::mat4 view = glm::mat4(1.0);
