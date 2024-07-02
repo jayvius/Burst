@@ -56,7 +56,18 @@ Token Scanner::next()
     skipWhitespace();
 
     if (isEnd())
-        return {TokenType::End, "", lineNum, begin+1};
+        return {TokenType::End, "", lineNum, begin};
+
+    if (isComment()) {
+        while (!isEndline() && !isEnd()) {
+            current++;
+        }
+
+        if (isEndline())
+            return {TokenType::Endline, "", lineNum, begin+1};
+        else
+            return {TokenType::End, "", lineNum, begin};
+    }
 
     if (isEndline()) {
         // Skip blank lines
@@ -175,6 +186,11 @@ bool Scanner::isSymbol()
         if (!isAlpha(src[i]) && !isDigit(src[i]) && src[i] != '_') return false;
     }
     return true;
+}
+
+bool Scanner::isComment()
+{
+    return src[begin] == '#';
 }
 
 std::string formatToken(Token &t)

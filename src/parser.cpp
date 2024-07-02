@@ -87,6 +87,26 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
         writeInt(rules[ruleIndex], i);
 }
 
+void parseRuleAttributes(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
+{
+    while (true) {
+        Token t = scanner.next();
+        if (t.type == TokenType::End || t.type == TokenType::Colon) {
+            return;
+        }
+
+        if (t.type == TokenType::Symbol && t.lexeme == "maxdepth") {
+            t = scanner.next();
+            if (t.type != TokenType::Integer)
+                parseError(t, "integer value required for maxdepth attribute");
+            rules[ruleIndex].maxDepth = t.as.int_value;
+        }
+        else {
+            parseError(t, fmt::format("invalid attribute {}", t.lexeme));
+        }
+    }
+}
+
 void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
 {
     while (true) {
@@ -194,12 +214,8 @@ void parse(Scanner &scanner, std::vector<Rule> &rules)
             continue;
 
         if (!isSymbol(t))
-            continue;
+            parseError(t, fmt::format("expected rule name, found '{}'", t.lexeme));
         std::string ruleName = t.lexeme;
-
-        t = scanner.next();
-        if (!isColon(t))
-            continue;
 
         if (findRule(rules, ruleName))
             parseError(t, fmt::format("duplicate rule name '{}'", ruleName));
@@ -225,13 +241,11 @@ void parse(Scanner &scanner, std::vector<Rule> &rules)
             parseError(t, fmt::format("unexpected token '{}'", t.lexeme));
         std::string ruleName = t.lexeme;
 
-        t = scanner.next();
-        if (t.type != TokenType::Colon)
-            parseError(t, "expected rule def");
-
         auto foundRuleIndex = findRule(rules, ruleName);
         if (!foundRuleIndex)
             parseError(t, fmt::format("undefined rule '{}'", ruleName));
+
+        parseRuleAttributes(scanner, rules, *foundRuleIndex);
         parseRuleDef(scanner, rules, *foundRuleIndex);
     }
     writeOpCode(rules[0], OpCode::exit);

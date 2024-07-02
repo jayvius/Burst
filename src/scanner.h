@@ -46,6 +46,7 @@ private:
     bool isLeftParen();
     bool isRightParen();
     bool isSymbol();
+    bool isComment();
 
     std::string src;
     size_t begin;
