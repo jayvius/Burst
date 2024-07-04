@@ -25,9 +25,10 @@ uint8_t readInt(Rule &rule, size_t &bytecodeIndex)
     return temp;
 }
 
-void drawBox(Buffer &buffer, glm::mat4 &transformation)
+void drawBox(VM &vm, Buffer &buffer, glm::mat4 &transformation)
 {
     addCube(buffer, transformation);
+    vm.numObjects++;
 }
 
 void translateX(glm::mat4 &transformation, float delta)
@@ -88,6 +89,8 @@ void runtimeError(std::string error)
 
 void run(std::string src, VM &vm, Buffer &buffer)
 {
+    vm.numObjects = 0;
+
     std::vector<Rule> rules;
     size_t ruleIndex = 0;
     size_t bytecodeIndex = 0;
@@ -116,7 +119,7 @@ void run(std::string src, VM &vm, Buffer &buffer)
 
         OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
         if (opcode == OpCode::drawBox) {
-            drawBox(buffer, transformation);
+            drawBox(vm, buffer, transformation);
         }
         else if (opcode == OpCode::translateX) {
             float delta = readFloat(rules[ruleIndex], bytecodeIndex);

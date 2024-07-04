@@ -10,6 +10,7 @@ struct VM
 {
     size_t currentRuleIndex;
     glm::mat4 transformation;
+    unsigned int numObjects;
 };
 
 void run(std::string src, VM &vm, Buffer &buffer);

@@ -293,6 +293,8 @@ int main(int argc, char *argv[])
     VM vm;
     run(src, vm, buffer);
 
+    fmt::print("number of objects: {}\n", vm.numObjects);
+
     if (exportMode) {
         exportObjects(buffer);
         return 0;

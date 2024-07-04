@@ -1,0 +1,6 @@
+R1 maxdepth 5000: tx 1.0 box (R1 R2 R3 R4 R5 R6)
+R2 maxdepth 5000: tx -1.0 box (R1 R2 R3 R4 R5 R6)
+R3 maxdepth 5000: ty 1.0 box (R1 R2 R3 R4 R5 R6)
+R4 maxdepth 5000: ty -1.0 box (R1 R2 R3 R4 R5 R6)
+R5 maxdepth 5000: tz 1.0 box (R1 R2 R3 R4 R5 R6)
+R6 maxdepth 5000: tz -1.0 box (R1 R2 R3 R4 R5 R6)
