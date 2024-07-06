@@ -68,17 +68,17 @@ void scale(glm::mat4 &transformation, float delta)
 
 void scaleX(glm::mat4 &transformation, float delta)
 {
-    transformation = glm::scale(transformation, glm::vec3(delta, 0.0, 0.0));
+    transformation = glm::scale(transformation, glm::vec3(delta, 1.0, 1.0));
 }
 
 void scaleY(glm::mat4 &transformation, float delta)
 {
-    transformation = glm::scale(transformation, glm::vec3(0.0, delta, 0.0));
+    transformation = glm::scale(transformation, glm::vec3(1.0, delta, 1.0));
 }
 
 void scaleZ(glm::mat4 &transformation, float delta)
 {
-    transformation = glm::scale(transformation, glm::vec3(0.0, 0.0, delta));
+    transformation = glm::scale(transformation, glm::vec3(1.0, 1.0, delta));
 }
 
 void runtimeError(std::string error)
@@ -94,7 +94,7 @@ void run(std::string src, VM &vm, Buffer &buffer)
     std::vector<Rule> rules;
     size_t ruleIndex = 0;
     size_t bytecodeIndex = 0;
-    glm::mat4 transformation = glm::mat4(1.0f);
+    glm::mat4 transformation = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
 
     std::vector<size_t> ruleIndexStack;
     std::vector<size_t> bytecodeIndexStack;
