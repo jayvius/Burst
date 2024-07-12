@@ -15,6 +15,7 @@ struct Buffer
     size_t vertexBufferUploadSize;
     size_t indexBufferUploadSize;
     size_t numVertices;
+    size_t numObjects;
 };
 
 struct VertexIndex {GLuint asGLuint;};

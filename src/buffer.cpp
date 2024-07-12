@@ -36,6 +36,7 @@ void init(Buffer &buffer)
     buffer.vertexBufferUploadSize = 0;
     buffer.indexBufferUploadSize = 0;
     buffer.numVertices = 0;
+    buffer.numObjects = 0;
 
     glBindVertexArray(0);
 }

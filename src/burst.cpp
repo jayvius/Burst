@@ -287,13 +287,11 @@ int main(int argc, char *argv[])
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    static Buffer buffer;
+    Buffer buffer;
     init(buffer);
+    run(src, buffer);
 
-    VM vm;
-    run(src, vm, buffer);
-
-    fmt::print("number of objects: {}\n", vm.numObjects);
+    fmt::print("number of objects: {}\n", buffer.numObjects);
 
     if (exportMode) {
         exportObjects(buffer);

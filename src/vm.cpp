@@ -32,10 +32,10 @@ uint8_t readInt(const std::vector<Rule> &rules, Frame &frame)
     return temp;
 }
 
-void drawBox(VM &vm, Buffer &buffer, glm::mat4 &transformation)
+void drawBox(Buffer &buffer, glm::mat4 &transformation)
 {
     addCube(buffer, transformation);
-    vm.numObjects++;
+    buffer.numObjects++;
 }
 
 void translateX(glm::mat4 &transformation, float delta)
@@ -94,10 +94,8 @@ void runtimeError(std::string error)
     exit(1);
 }
 
-void run(std::string src, VM &vm, Buffer &buffer)
+void run(std::string src, Buffer &buffer)
 {
-    vm.numObjects = 0;
-
     std::vector<Rule> rules;
 
     Scanner scanner(src);
@@ -121,7 +119,7 @@ void run(std::string src, VM &vm, Buffer &buffer)
 
         OpCode opcode = readOpCode(rules, frame);
         if (opcode == OpCode::drawBox) {
-            drawBox(vm, buffer, frame.transformation);
+            drawBox(buffer, frame.transformation);
         }
         else if (opcode == OpCode::translateX) {
             float delta = readFloat(rules, frame);
