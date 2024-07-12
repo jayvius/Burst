@@ -4,24 +4,31 @@
 #include <fmt/core.h>
 #include <cstdlib>
 
-OpCode readOpCode(Rule &rule, size_t &bytecodeIndex)
+struct Frame
 {
-    return OpCode(rule.bytecode[bytecodeIndex++]);
+    size_t ruleIndex;
+    size_t bytecodeIndex;
+    glm::mat4 transformation;
+};
+
+OpCode readOpCode(const std::vector<Rule> &rules, Frame &frame)
+{
+    return OpCode(rules[frame.ruleIndex].bytecode[frame.bytecodeIndex++]);
 }
 
-float readFloat(Rule &rule, size_t &bytecodeIndex)
+float readFloat(const std::vector<Rule> &rules, Frame &frame)
 {
     float temp;
-    memcpy(&temp, &rule.bytecode[bytecodeIndex], sizeof(float));
-    bytecodeIndex += sizeof(float);
+    memcpy(&temp, &rules[frame.ruleIndex].bytecode[frame.bytecodeIndex], sizeof(float));
+    frame.bytecodeIndex += sizeof(float);
     return temp;
 }
 
-uint8_t readInt(Rule &rule, size_t &bytecodeIndex)
+uint8_t readInt(const std::vector<Rule> &rules, Frame &frame)
 {
     uint8_t temp;
-    memcpy(&temp, &rule.bytecode[bytecodeIndex], sizeof(uint8_t));
-    bytecodeIndex += sizeof(uint8_t);
+    memcpy(&temp, &rules[frame.ruleIndex].bytecode[frame.bytecodeIndex], sizeof(uint8_t));
+    frame.bytecodeIndex += sizeof(uint8_t);
     return temp;
 }
 
@@ -92,101 +99,92 @@ void run(std::string src, VM &vm, Buffer &buffer)
     vm.numObjects = 0;
 
     std::vector<Rule> rules;
-    size_t ruleIndex = 0;
-    size_t bytecodeIndex = 0;
-    glm::mat4 transformation = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
-
-    std::vector<size_t> ruleIndexStack;
-    std::vector<size_t> bytecodeIndexStack;
-    std::vector<glm::mat4> transformationStack;
 
     Scanner scanner(src);
     parse(scanner, rules);
 
+    size_t ruleIndex = 0;
+    size_t bytecodeIndex = 0;
+    glm::mat4 transformation = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
+    Frame frame = {ruleIndex, bytecodeIndex, transformation};
+    std::vector<Frame> frameStack;
+
     while (true) {
-        while (bytecodeIndex >= rules[ruleIndex].bytecode.size()) {
-            if (ruleIndexStack.empty() || bytecodeIndexStack.empty())
+        while (frame.bytecodeIndex >= rules[frame.ruleIndex].bytecode.size()) {
+            if (frameStack.empty())
                 return;
             
-            rules[ruleIndex].currentDepth--;
-            ruleIndex = ruleIndexStack.back();
-            ruleIndexStack.pop_back();
-            bytecodeIndex = bytecodeIndexStack.back();
-            bytecodeIndexStack.pop_back();
-            transformation = transformationStack.back();
-            transformationStack.pop_back();
+            rules[frame.ruleIndex].currentDepth--;
+            frame = frameStack.back();
+            frameStack.pop_back();
         }
 
-        OpCode opcode = readOpCode(rules[ruleIndex], bytecodeIndex);
+        OpCode opcode = readOpCode(rules, frame);
         if (opcode == OpCode::drawBox) {
-            drawBox(vm, buffer, transformation);
+            drawBox(vm, buffer, frame.transformation);
         }
         else if (opcode == OpCode::translateX) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            translateX(transformation, delta);
+            float delta = readFloat(rules, frame);
+            translateX(frame.transformation, delta);
         }
         else if (opcode == OpCode::translateY) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            translateY(transformation, delta);
+            float delta = readFloat(rules, frame);
+            translateY(frame.transformation, delta);
         }
         else if (opcode == OpCode::translateZ) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            translateZ(transformation, delta);
+            float delta = readFloat(rules, frame);
+            translateZ(frame.transformation, delta);
         }
         else if (opcode == OpCode::rotateX) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            rotateX(transformation, delta);
+            float delta = readFloat(rules, frame);
+            rotateX(frame.transformation, delta);
         }
         else if (opcode == OpCode::rotateY) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            rotateY(transformation, delta);
+            float delta = readFloat(rules, frame);
+            rotateY(frame.transformation, delta);
         }
         else if (opcode == OpCode::rotateZ) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            rotateZ(transformation, delta);
+            float delta = readFloat(rules, frame);
+            rotateZ(frame.transformation, delta);
         }
         else if (opcode == OpCode::scale) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            scale(transformation, delta);
+            float delta = readFloat(rules, frame);
+            scale(frame.transformation, delta);
         }
         else if (opcode == OpCode::scaleX) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            scaleX(transformation, delta);
+            float delta = readFloat(rules, frame);
+            scaleX(frame.transformation, delta);
         }
         else if (opcode == OpCode::scaleY) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            scaleY(transformation, delta);
+            float delta = readFloat(rules, frame);
+            scaleY(frame.transformation, delta);
         }
         else if (opcode == OpCode::scaleZ) {
-            float delta = readFloat(rules[ruleIndex], bytecodeIndex);
-            scaleZ(transformation, delta);
+            float delta = readFloat(rules, frame);
+            scaleZ(frame.transformation, delta);
         }
         else if (opcode == OpCode::callRule) {
-            uint8_t nextRuleIndex = readInt(rules[ruleIndex], bytecodeIndex);
+            uint8_t nextRuleIndex = readInt(rules, frame);
             if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
                 continue;
-            rules[nextRuleIndex].currentDepth++;
-            ruleIndexStack.push_back(ruleIndex);
-            ruleIndex = nextRuleIndex;
-            bytecodeIndexStack.push_back(bytecodeIndex);
-            bytecodeIndex = 0;
-            transformationStack.push_back(transformation);
+            frameStack.push_back(frame);
+            frame.ruleIndex = nextRuleIndex;
+            frame.bytecodeIndex = 0;
+            rules[frame.ruleIndex].currentDepth++;
         }
         else if (opcode == OpCode::callRandomRule) {
-            uint8_t numRules = readInt(rules[ruleIndex], bytecodeIndex);
+            uint8_t numRules = readInt(rules, frame);
             std::vector<size_t> ruleSet;
             for (auto i = 0; i < numRules; i++)
-                ruleSet.push_back(readInt(rules[ruleIndex], bytecodeIndex));
+                ruleSet.push_back(readInt(rules, frame));
             size_t nextRuleIndex = ruleSet[std::rand() % ruleSet.size()];
 
             if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
                 continue;
-            rules[nextRuleIndex].currentDepth++;
-            ruleIndexStack.push_back(ruleIndex);
-            ruleIndex = nextRuleIndex;
-            bytecodeIndexStack.push_back(bytecodeIndex);
-            bytecodeIndex = 0;
-            transformationStack.push_back(transformation);
+            frameStack.push_back(frame);
+            frame.ruleIndex = nextRuleIndex;
+            frame.bytecodeIndex = 0;
+            rules[frame.ruleIndex].currentDepth++;
         }
         else if (opcode == OpCode::exit) {
             continue;
