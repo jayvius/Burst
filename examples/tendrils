@@ -1,4 +1,4 @@
 # Inspired by Structure Synth Octopod II (https://structuresynth.sourceforge.net)
 R0 maxdepth 45: ry 8.0 R0 (R1 R2)
-R1 maxdepth 300: s 0.99 rz 5.0 rx 5.0 tx 1.0 box (R1 R2)
-R2 maxdepth 300: s 0.99 rz -5.0 rx -5.0 tx 1.0 box (R1 R2)
+R1 maxdepth 500: s 0.99 rz 5.0 rx 5.0 tx 1.0 box (R1 R2)
+R2 maxdepth 500: s 0.99 rz -5.0 rx -5.0 tx 1.0 box (R1 R2)

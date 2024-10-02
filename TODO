@@ -1,4 +1,4 @@
-- Add maxdepth
+- Add weights to random function calls
 - Improve error handling
 - Add debug logging
 - add colors

@@ -1,8 +1,8 @@
 #include "buffer.hpp"
 #include <fmt/core.h>
 
-const size_t VERTEX_BUFFER_SIZE = 1024 * 1024 * sizeof(Vertex);
-const size_t INDEX_BUFFER_SIZE = 1024 * 1024 * sizeof(GLuint);
+const size_t VERTEX_BUFFER_SIZE = 10 * 1024 * 1024 * sizeof(Vertex);
+const size_t INDEX_BUFFER_SIZE = 10 * 1024 * 1024 * sizeof(GLuint);
 
 void init(Buffer &buffer)
 {
@@ -67,6 +67,12 @@ void draw(Buffer &buffer)
     if (!buffer.vertices.empty()) {
         size_t bufferSize = sizeof(Vertex) * buffer.vertices.size();
         glBufferSubData(GL_ARRAY_BUFFER, buffer.vertexBufferUploadSize, bufferSize, buffer.vertices.data());
+        GLenum err;
+        printf("get errors %d %d\n", buffer.vertexBufferUploadSize, bufferSize);
+        while((err = glGetError()) != GL_NO_ERROR) {
+            printf("ERROR: %d\n", err);
+        }
+
         buffer.vertexBufferUploadSize += bufferSize;
         buffer.vertices.clear();
     }

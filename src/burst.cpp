@@ -292,6 +292,8 @@ int main(int argc, char *argv[])
     run(src, buffer);
 
     fmt::print("number of objects: {}\n", buffer.numObjects);
+    fmt::print("number of vertices: {}\n", buffer.numVertices);
+    fmt::print("number of indices: {}\n", buffer.indices.size());
 
     if (exportMode) {
         exportObjects(buffer);
