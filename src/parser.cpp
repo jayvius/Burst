@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "opcodes.h"
 #include <cstdlib>
+#include <numeric>
 #include <fmt/core.h>
 
 void parseError(Token &t, std::string msg)
@@ -52,7 +53,9 @@ std::optional<size_t> findRule(std::vector<Rule> &rules, std::string name)
 void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
 {
     std::vector<size_t> ruleIndices;
+    std::vector<uint8_t> ruleWeights;
 
+    bool prevTokenSymbol = false;
     while (1) {
         Token t = scanner.next();
         if (t.type == TokenType::RightParen)
@@ -65,6 +68,15 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
             if (ruleIndices.size() == 255)
                 parseError(t, fmt::format("max number of random rules reached (255)"));
             ruleIndices.push_back(*ruleIndex);
+            ruleWeights.push_back(1);
+            prevTokenSymbol = true;
+        }
+        else if (t.type == TokenType::Integer && prevTokenSymbol) {
+            if (t.as.int_value < 1 || t.as.int_value > 255) {
+                parseError(t, fmt::format("rule weight must be between 1 and 255"));
+            }
+            ruleWeights[ruleWeights.size() - 1] = t.as.int_value;
+            prevTokenSymbol = false;
         }
         else {
             parseError(t, fmt::format("expected rule name"));
@@ -81,10 +93,21 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
         return;
     }
 
+    float p = 0.0;
+    float totalWeights = static_cast<float>(std::accumulate(ruleWeights.begin(), ruleWeights.end(), 0));
+    std::vector<float> cdf;
+    for (auto w: ruleWeights) {
+        p += w / totalWeights;
+        cdf.push_back(p);
+        printf("cdf: %u %u %f\n", w, totalWeights, p);
+    }
+
     writeOpCode(rules[ruleIndex], OpCode::callRandomRule);
     writeInt(rules[ruleIndex], static_cast<uint8_t>(ruleIndices.size()));
-    for (auto i: ruleIndices)
-        writeInt(rules[ruleIndex], i);
+    for (auto i = 0; i < ruleIndices.size(); i++) {
+        writeInt(rules[ruleIndex], ruleIndices[i]);
+        writeFloat(rules[ruleIndex], cdf[i]);
+    }
 }
 
 void parseRuleAttributes(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)

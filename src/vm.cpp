@@ -173,9 +173,20 @@ void run(std::string src, Buffer &buffer)
         else if (opcode == OpCode::callRandomRule) {
             uint8_t numRules = readInt(rules, frame);
             std::vector<size_t> ruleSet;
-            for (auto i = 0; i < numRules; i++)
+            std::vector<float> cdf;
+            for (auto i = 0; i < numRules; i++) {
                 ruleSet.push_back(readInt(rules, frame));
-            size_t nextRuleIndex = ruleSet[std::rand() % ruleSet.size()];
+                cdf.push_back(readFloat(rules, frame));
+            }
+            float r = std::rand() / static_cast<float>(RAND_MAX);
+            size_t i = 0;
+            for (auto p: cdf) {
+                if (r < p)
+                    break;
+                i++;
+            }
+            size_t nextRuleIndex = ruleSet[i];
+            printf("%f %u %u\n", r, i, nextRuleIndex);
 
             if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
                 continue;
