@@ -1,4 +1,4 @@
-R0 maxdepth 360: RBOX rz 2.0 tx 0.1 s 0.996 (R0 255 R1 1)
-R1 maxdepth 360: RBOX ry 2.0 tx 0.1 s 0.996 (R1 255 R2 1)
-R2 maxdepth 360: RBOX rz 2.0 tx 0.1 s 0.996 R2
+R0: ry 90.0 R1 ry 90.0 R1 ry 90.0 R1 ry 90.0 R1
+R1 maxdepth 10000: RBOX ry 2.0 tx 0.1 s 0.996 (R1 1000 R2)
+R2 maxdepth 10000: RBOX rz 2.0 tx 0.1 s 0.996 (R2 1000 R1)
 RBOX: sx 0.2 box

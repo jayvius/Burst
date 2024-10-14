@@ -186,7 +186,6 @@ void run(std::string src, Buffer &buffer)
                 i++;
             }
             size_t nextRuleIndex = ruleSet[i];
-            printf("%f %u %u\n", r, i, nextRuleIndex);
 
             if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
                 continue;

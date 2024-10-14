@@ -53,7 +53,7 @@ std::optional<size_t> findRule(std::vector<Rule> &rules, std::string name)
 void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
 {
     std::vector<size_t> ruleIndices;
-    std::vector<uint8_t> ruleWeights;
+    std::vector<uint32_t> ruleWeights;
 
     bool prevTokenSymbol = false;
     while (1) {
@@ -72,9 +72,6 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
             prevTokenSymbol = true;
         }
         else if (t.type == TokenType::Integer && prevTokenSymbol) {
-            if (t.as.int_value < 1 || t.as.int_value > 255) {
-                parseError(t, fmt::format("rule weight must be between 1 and 255"));
-            }
             ruleWeights[ruleWeights.size() - 1] = t.as.int_value;
             prevTokenSymbol = false;
         }
@@ -99,7 +96,6 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
     for (auto w: ruleWeights) {
         p += w / totalWeights;
         cdf.push_back(p);
-        printf("cdf: %u %u %f\n", w, totalWeights, p);
     }
 
     writeOpCode(rules[ruleIndex], OpCode::callRandomRule);
