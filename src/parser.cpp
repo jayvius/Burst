@@ -120,6 +120,15 @@ void parseRuleAttributes(Scanner &scanner, std::vector<Rule> &rules, size_t rule
                 parseError(t, "integer value required for maxdepth attribute");
             rules[ruleIndex].maxDepth = t.as.int_value;
         }
+        else if (t.type == TokenType::Symbol && t.lexeme == "nextrule") {
+            t = scanner.next();
+            if (t.type != TokenType::Symbol)
+                parseError(t, "valid rule name required for nextrule attribute");
+            auto nextRuleIndex = findRule(rules, t.lexeme);
+            if (!nextRuleIndex)
+                parseError(t, fmt::format("undefined rule: {}", t.lexeme));
+            rules[ruleIndex].nextRuleIndex = nextRuleIndex;
+        }
         else {
             parseError(t, fmt::format("invalid attribute {}", t.lexeme));
         }
@@ -238,7 +247,7 @@ void parse(Scanner &scanner, std::vector<Rule> &rules)
 
         if (findRule(rules, ruleName))
             parseError(t, fmt::format("duplicate rule name '{}'", ruleName));
-        rules.push_back({ruleName, {}, 0, 100});
+        rules.push_back({ruleName, {}, 0, 100, std::nullopt});
 
         while (true) {
             t = scanner.next();

@@ -11,6 +11,10 @@ struct Frame
     glm::mat4 transformation;
 };
 
+void printFrame(Frame &f) {
+    printf("Frame {ruleIndex=%lu bytecodeIndex=%lu}\n", f.ruleIndex, f.bytecodeIndex);
+}
+
 OpCode readOpCode(const std::vector<Rule> &rules, Frame &frame)
 {
     return OpCode(rules[frame.ruleIndex].bytecode[frame.bytecodeIndex++]);
@@ -112,7 +116,9 @@ void run(std::string src, Buffer &buffer)
             if (frameStack.empty())
                 return;
             
-            rules[frame.ruleIndex].currentDepth--;
+            if (rules[frame.ruleIndex].currentDepth > 0) {
+                rules[frame.ruleIndex].currentDepth--;
+            }
             frame = frameStack.back();
             frameStack.pop_back();
         }
@@ -163,6 +169,10 @@ void run(std::string src, Buffer &buffer)
         }
         else if (opcode == OpCode::callRule) {
             uint8_t nextRuleIndex = readInt(rules, frame);
+            while (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth && rules[nextRuleIndex].nextRuleIndex) {
+                rules[nextRuleIndex].currentDepth = 1;
+                nextRuleIndex = *rules[nextRuleIndex].nextRuleIndex;
+            }
             if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
                 continue;
             frameStack.push_back(frame);
@@ -187,8 +197,13 @@ void run(std::string src, Buffer &buffer)
             }
             size_t nextRuleIndex = ruleSet[i];
 
+            while (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth && rules[nextRuleIndex].nextRuleIndex) {
+                rules[nextRuleIndex].currentDepth = 1;
+                nextRuleIndex = *rules[nextRuleIndex].nextRuleIndex;
+            }
             if (rules[nextRuleIndex].currentDepth == rules[nextRuleIndex].maxDepth)
                 continue;
+
             frameStack.push_back(frame);
             frame.ruleIndex = nextRuleIndex;
             frame.bytecodeIndex = 0;

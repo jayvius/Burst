@@ -36,4 +36,5 @@ g++ $CPPFLAGS \
     src/vm.cpp \
     src/scanner.cpp \
     src/parser.cpp \
+    src/rules.cpp \
     gl3w/src/gl3w.c
