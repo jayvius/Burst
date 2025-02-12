@@ -1,6 +1,8 @@
-#include "scanner.h"
 #include <format>
 #include <iostream>
+#include <print>
+
+#include "scanner.hpp"
 
 using std::string;
 
@@ -107,7 +109,7 @@ Token Scanner::next()
     if (isSymbol())
         return {TokenType::Symbol, getLexeme(), lineNum, begin+1};
 
-    std::cout << std::format("ERROR (line {} col {}): invalid token {}\n", lineNum, begin+1, getLexeme());
+    std::print(std::cerr, "ERROR (line {} col {}): invalid token {}\n", lineNum, begin+1, getLexeme());
     exit(1);
 }
 

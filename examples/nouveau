@@ -1,5 +1,6 @@
-CENTER: R0 ry 90.0 R0 ry 90.0 R0 ry 90.0 R0
-R0 maxdepth 50: (R1 R2)
+CENTER: R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0 ry 30.0 R0
+R0 maxdepth 50: (R1 R2 R3)
 R1 maxdepth 45 nextrule R0: RBOX ry 2.0 tx 0.1 s 0.996 R1
 R2 maxdepth 45 nextrule R0: RBOX rz 2.0 tx 0.1 s 0.996 R2
+R3 maxdepth 20 nextrule R0: RBOX tx 0.1 s 0.996 R3
 RBOX: sx 0.2 box

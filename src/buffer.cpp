@@ -1,5 +1,7 @@
-#include "buffer.hpp"
 #include <cassert>
+#include <print>
+
+#include "buffer.hpp"
 
 const size_t VERTEX_BUFFER_SIZE = 10 * 1024 * 1024 * sizeof(Vertex);
 const size_t INDEX_BUFFER_SIZE = 10 * 1024 * 1024 * sizeof(GLuint);
@@ -80,4 +82,17 @@ void draw(Buffer &buffer)
 
     glDrawElements(GL_TRIANGLES, buffer.numVertices, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+void exportObj(Buffer &buffer)
+{
+    std::print("{}\n", buffer.vertices.size());
+    for (auto &vertex: buffer.vertices) {
+        std::print("v {} {} {}\n", vertex.position[0], vertex.position[1], vertex.position[2]);
+    }
+    size_t i = 0;
+    while (i < buffer.indices.size()) {
+        std::print("f {} {} {}\n", buffer.indices[i] + 1, buffer.indices[i+1] + 1, buffer.indices[i+2] + 1);
+        i += 3;
+    }
 }

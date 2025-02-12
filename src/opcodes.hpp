@@ -1,5 +1,4 @@
-#ifndef OPCODES_H
-#define OPCODES_H
+#pragma once
 
 enum class OpCode
 {
@@ -18,5 +17,3 @@ enum class OpCode
     callRule,
     callRandomRule,
 };
-
-#endif

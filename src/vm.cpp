@@ -1,15 +1,17 @@
-#include "vm.hpp"
-#include "parser.h"
-#include "cube.hpp"
 #include <format>
 #include <cstdlib>
 #include <cstring>
+
+#include "vm.hpp"
+#include "parser.hpp"
+#include "cube.hpp"
 
 struct Frame
 {
     size_t ruleIndex;
     size_t bytecodeIndex;
     glm::mat4 transformation;
+    glm::vec<4, unsigned char> rgba;
 };
 
 void printFrame(Frame &f) {
@@ -37,9 +39,9 @@ uint8_t readInt(const std::vector<Rule> &rules, Frame &frame)
     return temp;
 }
 
-void drawBox(Buffer &buffer, glm::mat4 &transformation)
+void drawBox(Buffer &buffer, glm::mat4 &transformation, glm::vec<4, unsigned char> &rgba)
 {
-    addCube(buffer, transformation);
+    addCube(buffer, transformation, rgba);
     buffer.numObjects++;
 }
 
@@ -109,7 +111,7 @@ void run(std::string src, Buffer &buffer)
     size_t ruleIndex = 0;
     size_t bytecodeIndex = 0;
     glm::mat4 transformation = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
-    Frame frame = {ruleIndex, bytecodeIndex, transformation};
+    Frame frame = {ruleIndex, bytecodeIndex, transformation, {255, 255, 255, 255}};
     std::vector<Frame> frameStack;
 
     while (true) {
@@ -126,7 +128,7 @@ void run(std::string src, Buffer &buffer)
 
         OpCode opcode = readOpCode(rules, frame);
         if (opcode == OpCode::drawBox) {
-            drawBox(buffer, frame.transformation);
+            drawBox(buffer, frame.transformation, frame.rgba);
         }
         else if (opcode == OpCode::translateX) {
             float delta = readFloat(rules, frame);
@@ -184,14 +186,14 @@ void run(std::string src, Buffer &buffer)
         else if (opcode == OpCode::callRandomRule) {
             uint8_t numRules = readInt(rules, frame);
             std::vector<size_t> ruleSet;
-            std::vector<float> cdf;
+            std::vector<float> pdf;
             for (auto i = 0; i < numRules; i++) {
                 ruleSet.push_back(readInt(rules, frame));
-                cdf.push_back(readFloat(rules, frame));
+                pdf.push_back(readFloat(rules, frame));
             }
             float r = std::rand() / static_cast<float>(RAND_MAX);
             size_t i = 0;
-            for (auto p: cdf) {
+            for (auto p: pdf) {
                 if (r < p)
                     break;
                 i++;
