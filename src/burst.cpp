@@ -11,7 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <fmt/core.h>
+#include <format>
+#include <iostream>
 
 #include "types.hpp"
 #include "cube.hpp"
@@ -124,13 +125,13 @@ GLuint create_program(std::string vertex_shader_src,
 
 void exportObjects(Buffer &buffer)
 {
-    fmt::print("{}\n", buffer.vertices.size());
+    std::cout << std::format("{}\n", buffer.vertices.size());
     for (auto &vertex: buffer.vertices) {
-        fmt::print("v {} {} {}\n", vertex.position[0], vertex.position[1], vertex.position[2]);
+        std::cout << std::format("v {} {} {}\n", vertex.position[0], vertex.position[1], vertex.position[2]);
     }
     size_t i = 0;
     while (i < buffer.indices.size()) {
-        fmt::print("f {} {} {}\n", buffer.indices[i] + 1, buffer.indices[i+1] + 1, buffer.indices[i+2] + 1);
+        std::cout << std::format("f {} {} {}\n", buffer.indices[i] + 1, buffer.indices[i+1] + 1, buffer.indices[i+2] + 1);
         i += 3;
     }
 }
@@ -278,12 +279,12 @@ int main(int argc, char *argv[])
     glfwSetMouseButtonCallback(window, trackballToggleCallback);
     glfwSetCursorPosCallback(window, trackballDragCallback);
 
-    fmt::print("renderer: {}\n", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-    fmt::print("opengl version: {}\n", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    std::cout << std::format("renderer: {}\n", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    std::cout << std::format("opengl version: {}\n", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
     GLuint program = create_program(loadFile("src/triangle.vs"), loadFile("src/triangle.fs"), "", {});
-    GLuint programNormals = create_program(loadFile("src/normals.vs"),
-        loadFile("src/normals.fs"), loadFile("src/normals.gs"), {});
+    //GLuint programNormals = create_program(loadFile("src/normals.vs"),
+    //    loadFile("src/normals.fs"), loadFile("src/normals.gs"), {});
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -291,9 +292,9 @@ int main(int argc, char *argv[])
     init(buffer);
     run(src, buffer);
 
-    fmt::print("number of objects: {}\n", buffer.numObjects);
-    fmt::print("number of vertices: {}\n", buffer.numVertices);
-    fmt::print("number of indices: {}\n", buffer.indices.size());
+    std::cout << std::format("number of objects: {}\n", buffer.numObjects);
+    std::cout << std::format("number of vertices: {}\n", buffer.numVertices);
+    std::cout << std::format("number of indices: {}\n", buffer.indices.size());
 
     if (exportMode) {
         exportObjects(buffer);

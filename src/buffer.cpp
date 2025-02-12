@@ -1,5 +1,5 @@
 #include "buffer.hpp"
-#include <fmt/core.h>
+#include <cassert>
 
 const size_t VERTEX_BUFFER_SIZE = 10 * 1024 * 1024 * sizeof(Vertex);
 const size_t INDEX_BUFFER_SIZE = 10 * 1024 * 1024 * sizeof(GLuint);

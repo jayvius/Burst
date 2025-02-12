@@ -1,8 +1,9 @@
 #include "vm.hpp"
 #include "parser.h"
 #include "cube.hpp"
-#include <fmt/core.h>
+#include <format>
 #include <cstdlib>
+#include <cstring>
 
 struct Frame
 {
@@ -213,7 +214,7 @@ void run(std::string src, Buffer &buffer)
             continue;
         }
         else {
-            runtimeError(fmt::format("invalid opcode: {}", static_cast<int>(opcode)));
+            runtimeError(std::format("invalid opcode: {}", static_cast<int>(opcode)));
         }
     }
 

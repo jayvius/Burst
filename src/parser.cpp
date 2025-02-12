@@ -2,11 +2,13 @@
 #include "opcodes.h"
 #include <cstdlib>
 #include <numeric>
-#include <fmt/core.h>
+#include <format>
+#include <iostream>
+#include <cstring>
 
 void parseError(Token &t, std::string msg)
 {
-    fmt::print(stderr, "ERROR (line {} col {}): {}\n", t.line, t.col, msg);
+    std::cerr << std::format("ERROR (line {} col {}): {}\n", t.line, t.col, msg);
     exit(1);
 }
 
@@ -14,7 +16,7 @@ float parseFloat(Scanner &scanner)
 {
     Token t = scanner.next();
     if (t.type != TokenType::Float) {
-        parseError(t, fmt::format("expected float; found '{}'", t.lexeme));
+        parseError(t, std::format("expected float; found '{}'", t.lexeme));
     }
     return t.as.float_value;
 }
@@ -64,9 +66,9 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
         if (t.type == TokenType::Symbol) {
             auto ruleIndex = findRule(rules, t.lexeme);
             if (!ruleIndex)
-                parseError(t, fmt::format("undefined rule: {}", t.lexeme));
+                parseError(t, std::format("undefined rule: {}", t.lexeme));
             if (ruleIndices.size() == 255)
-                parseError(t, fmt::format("max number of random rules reached (255)"));
+                parseError(t, std::format("max number of random rules reached (255)"));
             ruleIndices.push_back(*ruleIndex);
             ruleWeights.push_back(1);
             prevTokenSymbol = true;
@@ -76,7 +78,7 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
             prevTokenSymbol = false;
         }
         else {
-            parseError(t, fmt::format("expected rule name"));
+            parseError(t, std::format("expected rule name"));
         }
     }
 
@@ -126,11 +128,11 @@ void parseRuleAttributes(Scanner &scanner, std::vector<Rule> &rules, size_t rule
                 parseError(t, "valid rule name required for nextrule attribute");
             auto nextRuleIndex = findRule(rules, t.lexeme);
             if (!nextRuleIndex)
-                parseError(t, fmt::format("undefined rule: {}", t.lexeme));
+                parseError(t, std::format("undefined rule: {}", t.lexeme));
             rules[ruleIndex].nextRuleIndex = nextRuleIndex;
         }
         else {
-            parseError(t, fmt::format("invalid attribute {}", t.lexeme));
+            parseError(t, std::format("invalid attribute {}", t.lexeme));
         }
     }
 }
@@ -199,14 +201,14 @@ void parseRuleDef(Scanner &scanner, std::vector<Rule> &rules, size_t ruleIndex)
             writeOpCode(rules[ruleIndex], OpCode::callRule);
             auto nextRule = findRule(rules, t.lexeme);
             if (!nextRule)
-                parseError(t, fmt::format("undefined rule {}", t.lexeme));
+                parseError(t, std::format("undefined rule {}", t.lexeme));
             writeInt(rules[ruleIndex], *nextRule);
         }
         else if (t.type == TokenType::LeftParen) {
             parseRandomRuleCall(scanner, rules, ruleIndex);
         }
         else {
-            parseError(t, fmt::format("unexpected symbol '{}'", t.lexeme));
+            parseError(t, std::format("unexpected symbol '{}'", t.lexeme));
         }
     }
 }
@@ -242,11 +244,11 @@ void parse(Scanner &scanner, std::vector<Rule> &rules)
             continue;
 
         if (!isSymbol(t))
-            parseError(t, fmt::format("expected rule name, found '{}'", t.lexeme));
+            parseError(t, std::format("expected rule name, found '{}'", t.lexeme));
         std::string ruleName = t.lexeme;
 
         if (findRule(rules, ruleName))
-            parseError(t, fmt::format("duplicate rule name '{}'", ruleName));
+            parseError(t, std::format("duplicate rule name '{}'", ruleName));
         rules.push_back({ruleName, {}, 0, 100, std::nullopt});
 
         while (true) {
@@ -266,12 +268,12 @@ void parse(Scanner &scanner, std::vector<Rule> &rules)
         if (t.type == TokenType::Endline)
             continue;
         if (t.type != TokenType::Symbol)
-            parseError(t, fmt::format("unexpected token '{}'", t.lexeme));
+            parseError(t, std::format("unexpected token '{}'", t.lexeme));
         std::string ruleName = t.lexeme;
 
         auto foundRuleIndex = findRule(rules, ruleName);
         if (!foundRuleIndex)
-            parseError(t, fmt::format("undefined rule '{}'", ruleName));
+            parseError(t, std::format("undefined rule '{}'", ruleName));
 
         parseRuleAttributes(scanner, rules, *foundRuleIndex);
         parseRuleDef(scanner, rules, *foundRuleIndex);

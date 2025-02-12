@@ -1,5 +1,6 @@
 #include "scanner.h"
-#include <fmt/core.h>
+#include <format>
+#include <iostream>
 
 using std::string;
 
@@ -100,13 +101,13 @@ Token Scanner::next()
 
     // Handle symbol or value tokens
     if (std::optional<uint32_t> int_value = stringToUInt32(getLexeme()))
-        return {TokenType::Integer, getLexeme(), lineNum, begin+1, .as.int_value=*int_value};
+        return {TokenType::Integer, getLexeme(), lineNum, begin+1, {.int_value=*int_value}};
     if (std::optional<float> float_value = stringToFloat(getLexeme()))
-        return {TokenType::Float, getLexeme(), lineNum, begin+1, .as.float_value=*float_value};
+        return {TokenType::Float, getLexeme(), lineNum, begin+1, {.float_value=*float_value}};
     if (isSymbol())
         return {TokenType::Symbol, getLexeme(), lineNum, begin+1};
 
-    fmt::print("ERROR (line {} col {}): invalid token {}\n", lineNum, begin+1, getLexeme());
+    std::cout << std::format("ERROR (line {} col {}): invalid token {}\n", lineNum, begin+1, getLexeme());
     exit(1);
 }
 
@@ -196,19 +197,19 @@ bool Scanner::isComment()
 std::string formatToken(Token &t)
 {
     if (t.type == TokenType::Endline)
-        return fmt::format("type={} lexeme={}", "Endline", t.lexeme);
+        return std::format("type={} lexeme={}", "Endline", t.lexeme);
     if (t.type == TokenType::Colon)
-        return fmt::format("type={} lexeme={}", "Colon", t.lexeme);
+        return std::format("type={} lexeme={}", "Colon", t.lexeme);
     if (t.type == TokenType::Symbol)
-        return fmt::format("type={} lexeme={}", "Symbol", t.lexeme);
+        return std::format("type={} lexeme={}", "Symbol", t.lexeme);
     if (t.type == TokenType::Integer)
-        return fmt::format("type={} lexeme={}", "Integer", t.lexeme);
+        return std::format("type={} lexeme={}", "Integer", t.lexeme);
     if (t.type == TokenType::Float)
-        return fmt::format("type={} lexeme={}", "Float", t.lexeme);
+        return std::format("type={} lexeme={}", "Float", t.lexeme);
     if (t.type == TokenType::LeftParen)
-        return fmt::format("type={} lexeme={}", "LeftParen", t.lexeme);
+        return std::format("type={} lexeme={}", "LeftParen", t.lexeme);
     if (t.type == TokenType::RightParen)
-        return fmt::format("type={} lexeme={}", "RightParen", t.lexeme);
+        return std::format("type={} lexeme={}", "RightParen", t.lexeme);
     int token_value = static_cast<std::underlying_type<TokenType>::type>(t.type);
-    return fmt::format("invalid token type {}", token_value);
+    return std::format("invalid token type {}", token_value);
 }
