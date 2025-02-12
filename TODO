@@ -1,6 +1,7 @@
-- Improve error handling
+- improve error handling
 - Add debug logging
 - add colors
 - add random seed
 - add animation
 - export to obj
+- add support for comments

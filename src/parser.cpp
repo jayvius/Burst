@@ -1,14 +1,16 @@
-#include "parser.h"
-#include "opcodes.h"
 #include <cstdlib>
 #include <numeric>
 #include <format>
 #include <iostream>
+#include <print>
 #include <cstring>
+
+#include "parser.hpp"
+#include "opcodes.hpp"
 
 void parseError(Token &t, std::string msg)
 {
-    std::cerr << std::format("ERROR (line {} col {}): {}\n", t.line, t.col, msg);
+    std::print(std::cerr, "ERROR (line {} col {}): {}\n", t.line, t.col, msg);
     exit(1);
 }
 
@@ -92,19 +94,20 @@ void parseRandomRuleCall(Scanner &scanner, std::vector<Rule> &rules, size_t rule
         return;
     }
 
+    // Calculate probabilty density function values for rules
     float p = 0.0;
     float totalWeights = static_cast<float>(std::accumulate(ruleWeights.begin(), ruleWeights.end(), 0));
-    std::vector<float> cdf;
+    std::vector<float> pdf;
     for (auto w: ruleWeights) {
         p += w / totalWeights;
-        cdf.push_back(p);
+        pdf.push_back(p);
     }
 
     writeOpCode(rules[ruleIndex], OpCode::callRandomRule);
     writeInt(rules[ruleIndex], static_cast<uint8_t>(ruleIndices.size()));
     for (auto i = 0; i < ruleIndices.size(); i++) {
         writeInt(rules[ruleIndex], ruleIndices[i]);
-        writeFloat(rules[ruleIndex], cdf[i]);
+        writeFloat(rules[ruleIndex], pdf[i]);
     }
 }
 

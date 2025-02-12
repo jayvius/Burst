@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+# No need for fancy Makefile; it's fast enough to just rebuild entire project every time
+
 debug=false
 if [ $# -eq 1 ] && [ $1 == "debug" ]; then
     debug=true
@@ -8,7 +10,7 @@ elif [ $# -eq 1 ]; then
     exit 1
 fi
 
-CPPFLAGS="-Wall -std=c++20 -Wno-deprecated"
+CPPFLAGS="-Wall -std=c++23 -Wno-deprecated"
 OUTPUT=
 if [ "$debug" = true ]; then
     echo "Building debug version..."
@@ -33,5 +35,4 @@ g++ $CPPFLAGS \
     src/vm.cpp \
     src/scanner.cpp \
     src/parser.cpp \
-    src/rules.cpp \
     gl3w/src/gl3w.c

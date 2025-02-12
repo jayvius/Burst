@@ -1,10 +1,10 @@
-#ifndef RULES_H
-#define RULES_H
+#pragma once
 
 #include <vector>
 #include <string>
 #include <optional>
-#include "opcodes.h"
+
+#include "opcodes.hpp"
 
 struct Rule
 {
@@ -14,7 +14,3 @@ struct Rule
     size_t maxDepth;
     std::optional<size_t> nextRuleIndex;
 };
-
-void printRule(Rule &r);
-
-#endif

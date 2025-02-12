@@ -11,8 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <format>
 #include <iostream>
+#include <print>
 
 #include "types.hpp"
 #include "cube.hpp"
@@ -121,19 +121,6 @@ GLuint create_program(std::string vertex_shader_src,
 
     glUseProgram(program);
     return program;
-}
-
-void exportObjects(Buffer &buffer)
-{
-    std::cout << std::format("{}\n", buffer.vertices.size());
-    for (auto &vertex: buffer.vertices) {
-        std::cout << std::format("v {} {} {}\n", vertex.position[0], vertex.position[1], vertex.position[2]);
-    }
-    size_t i = 0;
-    while (i < buffer.indices.size()) {
-        std::cout << std::format("f {} {} {}\n", buffer.indices[i] + 1, buffer.indices[i+1] + 1, buffer.indices[i+2] + 1);
-        i += 3;
-    }
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -271,20 +258,20 @@ int main(int argc, char *argv[])
         }
     }
 
+    // TODO: Add cli argument for rng seed
+    std::srand(3);
+
     GLFWwindow* window = create_window(800, 800, "Burst");
     init_gl();
 
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetScrollCallback(window, trackballDollyCallback);
     glfwSetMouseButtonCallback(window, trackballToggleCallback);
     glfwSetCursorPosCallback(window, trackballDragCallback);
 
-    std::cout << std::format("renderer: {}\n", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-    std::cout << std::format("opengl version: {}\n", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    std::print("renderer: {}\n", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    std::print("opengl version: {}\n", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
-    GLuint program = create_program(loadFile("src/triangle.vs"), loadFile("src/triangle.fs"), "", {});
-    //GLuint programNormals = create_program(loadFile("src/normals.vs"),
-    //    loadFile("src/normals.fs"), loadFile("src/normals.gs"), {});
+    GLuint program = create_program(loadFile("src/shader.vs"), loadFile("src/shader.fs"), "", {});
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -292,12 +279,12 @@ int main(int argc, char *argv[])
     init(buffer);
     run(src, buffer);
 
-    std::cout << std::format("number of objects: {}\n", buffer.numObjects);
-    std::cout << std::format("number of vertices: {}\n", buffer.numVertices);
-    std::cout << std::format("number of indices: {}\n", buffer.indices.size());
+    std::print("number of objects: {}\n", buffer.numObjects);
+    std::print("number of vertices: {}\n", buffer.numVertices);
+    std::print("number of indices: {}\n", buffer.indices.size());
 
     if (exportMode) {
-        exportObjects(buffer);
+        exportObj(buffer);
         return 0;
     }
 

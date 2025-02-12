@@ -1,5 +1,4 @@
-#ifndef SCANNER_H
-#define SCANNER_H
+#pragma once
 
 #include <string>
 #include <optional>
@@ -53,5 +52,3 @@ private:
     size_t current;
     size_t lineNum;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef TYPES_HPP
-#define TYPES_HPP
+#pragma once
 
 struct Vertex
 {
@@ -7,5 +6,3 @@ struct Vertex
     float normal[3];
     unsigned char color[4];
 };
-
-#endif

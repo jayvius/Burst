@@ -1,9 +1,10 @@
-#include "vm.hpp"
-#include "parser.h"
-#include "cube.hpp"
 #include <format>
 #include <cstdlib>
 #include <cstring>
+
+#include "vm.hpp"
+#include "parser.hpp"
+#include "cube.hpp"
 
 struct Frame
 {
@@ -184,14 +185,14 @@ void run(std::string src, Buffer &buffer)
         else if (opcode == OpCode::callRandomRule) {
             uint8_t numRules = readInt(rules, frame);
             std::vector<size_t> ruleSet;
-            std::vector<float> cdf;
+            std::vector<float> pdf;
             for (auto i = 0; i < numRules; i++) {
                 ruleSet.push_back(readInt(rules, frame));
-                cdf.push_back(readFloat(rules, frame));
+                pdf.push_back(readFloat(rules, frame));
             }
             float r = std::rand() / static_cast<float>(RAND_MAX);
             size_t i = 0;
-            for (auto p: cdf) {
+            for (auto p: pdf) {
                 if (r < p)
                     break;
                 i++;

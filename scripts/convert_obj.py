@@ -1,3 +1,7 @@
+"""
+Convert obj mesh file to c++ data arrays
+"""
+
 import sys
 from dataclasses import dataclass, field
 
