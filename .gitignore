@@ -2,3 +2,6 @@
 burst
 burst_debug
 *.dSYM
+bin
+.deps
+obj
