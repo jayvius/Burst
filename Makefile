@@ -3,63 +3,54 @@ CC = gcc
 CXX = g++
 CFLAGS = -Wall -Wextra
 CXXFLAGS = -std=c++23 -Wall -Wextra -O2
-LDFLAGS = -lglfw
+LDFLAGS = -lglfw3 -framework OpenGL -framework Cocoa -framework IOKit -framework QuartzCore
 
 # Directories
-SRCDIR = src
-OBJDIR = obj
-BINDIR = bin
-DEPDIR = .deps
-GL3W_SRCDIR = gl3w/src
-GL3W_INCLUDE_DIR = gl3w/include
+SRC_DIR = src
+BUILD_DIR = build
+OBJ_DIR = build/obj
+GL3W_SRC_DIR = external/gl3w/src
+GL3W_INCLUDE_DIR = external/gl3w/include
+INCLUDE_DIRS = -I $(GL3W_INCLUDE_DIR) -I external/glfw/include -I external/glm
+LIB_DIRS = -L external/glfw/build/src
 
 # Source files
-C_SOURCES = $(wildcard $(GL3W_SRCDIR)/*.c)
-CXX_SOURCES = $(wildcard $(SRCDIR)/*.cpp)
+C_SOURCES = $(wildcard $(GL3W_SRC_DIR)/*.c)
+CXX_SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 SOURCES = $(C_SOURCES) $(CXX_SOURCES)
 
 # Object files
-C_OBJECTS = $(patsubst $(GL3W_SRCDIR)/%.c,$(OBJDIR)/%.o,$(C_SOURCES))
-CXX_OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CXX_SOURCES))
+C_OBJECTS = $(patsubst $(GL3W_SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
+CXX_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CXX_SOURCES))
 OBJECTS = $(C_OBJECTS) $(CXX_OBJECTS)
 
-# Executable name
-TARGET = $(BINDIR)/burst
-
 # Phony targets
-.PHONY: all clean rebuild
+.PHONY: all clean rebuild burst
 
 # Default target
-all: $(TARGET)
+all: burst
 
 # Rule to build the executable
-$(TARGET): $(OBJECTS) | $(BINDIR)
-	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@
+burst: $(OBJECTS)
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(BUILD_DIR)/$@ $(LIB_DIRS)
+	cp build/burst .
 
 # Rule to compile C++ source files
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR) $(DEPDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -MMD -MP -MF $(DEPDIR)/$*.d -I $(GL3W_INCLUDE_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDE_DIRS)
 
 # Rule to compile C source files
-$(OBJDIR)/%.o: $(GL3W_SRCDIR)/%.c | $(OBJDIR) $(DEPDIR)
-	$(CC) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(DEPDIR)/$*.d -I $(GL3W_INCLUDE_DIR)
+$(OBJ_DIR)/%.o: $(GL3W_SRC_DIR)/%.c $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@ -I $(GL3W_INCLUDE_DIR)
 
 # Create directories if they don't exist
-$(BINDIR):
-	mkdir -p $(BINDIR)
-
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
-
-$(DEPDIR):
-	mkdir -p $(DEPDIR)
-
-# Include dependency files
--include $(wildcard $(DEPDIR)/*.d)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(OBJ_DIR)
 
 # Clean target
 clean:
-	rm -rf $(OBJDIR) $(BINDIR) $(DEPDIR)
+	rm -rf $(OBJ_DIR) $(BUILD_DIR)
 
 # Rebuild target
 rebuild: clean all
