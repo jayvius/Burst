@@ -5,3 +5,5 @@ burst_debug
 bin
 .deps
 obj
+Makefile
+burst.make
