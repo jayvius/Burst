@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <chrono>
 
 #include "GL/gl3w.h"
 #include <GLFW/glfw3.h>
@@ -277,10 +278,14 @@ int main(int argc, char *argv[])
 
     Buffer buffer;
     init(buffer);
+    auto start = std::chrono::high_resolution_clock::now();
     run(src, buffer);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::print("{:.3f}s\n", elapsed.count());
 
     std::print("number of objects: {}\n", buffer.numObjects);
-    std::print("number of vertices: {}\n", buffer.numVertices);
+    std::print("number of vertices: {}\n", buffer.vertices.size());
     std::print("number of indices: {}\n", buffer.indices.size());
 
     if (exportMode) {
